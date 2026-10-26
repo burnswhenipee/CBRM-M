@@ -18,7 +18,7 @@ Now:
 - Window is resizable and maximizable; the log is always visible and fills the remaining space
 - Removed the show/hide log arrow
 - Long log messages can be read by widening the window or scrolling sideways; hover a row for the full message; Ctrl+A / Ctrl+C copy messages
-- Standard Windows file and folder dialogs (separate File... and Folder... buttons) that reopen at the last location used this session
+- Standard Windows file and folder dialogs (separate File... and Folder... buttons) that reopen at the last location used (Windows also remembers it between sessions)
 - Picking a source no longer resets the conversion options; options that don't apply are greyed out instead
 - The "N images for M pages!" warning now also appears when the images were merged back into pages (it says "Merged into N images"), so sliced-up PDFs are always flagged
 - `.rar` and `.zip` files are treated as comics, like `.cbr` / `.cbz`
