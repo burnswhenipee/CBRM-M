@@ -103,6 +103,9 @@ namespace CbrConverter
             }
         }
 
+        public int g_FileIndex { get; set; } //number of the file being converted, starting at 1
+        public int g_FileCount { get; set; } //number of files to convert
+
         public static DataAccess Instance
         {
 

@@ -29,341 +29,557 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.chk_SourceFolder = new System.Windows.Forms.CheckBox();
-            this.tbox_OuputFolder = new System.Windows.Forms.TextBox();
-            this.lbl_about = new System.Windows.Forms.Label();
+            this.layoutRoot = new System.Windows.Forms.TableLayoutPanel();
+            this.lbl_SourceHeading = new System.Windows.Forms.Label();
+            this.layoutSource = new System.Windows.Forms.TableLayoutPanel();
             this.tbox_SourceFile = new System.Windows.Forms.TextBox();
             this.btn_SelectFile = new System.Windows.Forms.Button();
             this.btn_SelectFolder = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.btn_StartStop = new System.Windows.Forms.Button();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.chk_JoinImages = new System.Windows.Forms.CheckBox();
-            this.chk_NbPages = new System.Windows.Forms.CheckBox();
-            this.chk_pdf2cbr = new System.Windows.Forms.CheckBox();
+            this.lbl_SourceHint = new System.Windows.Forms.Label();
+            this.lbl_OutputHeading = new System.Windows.Forms.Label();
+            this.layoutOutput = new System.Windows.Forms.TableLayoutPanel();
+            this.rb_SameFolder = new System.Windows.Forms.RadioButton();
+            this.rb_CustomFolder = new System.Windows.Forms.RadioButton();
+            this.tbox_OutputFolder = new System.Windows.Forms.TextBox();
+            this.btn_SelectOutput = new System.Windows.Forms.Button();
+            this.lbl_ConvertHeading = new System.Windows.Forms.Label();
+            this.layoutOptions = new System.Windows.Forms.FlowLayoutPanel();
             this.chk_cbr2pdf = new System.Windows.Forms.CheckBox();
+            this.chk_pdf2cbr = new System.Windows.Forms.CheckBox();
+            this.chk_JoinImages = new System.Windows.Forms.CheckBox();
             this.chk_ReduceSize = new System.Windows.Forms.CheckBox();
-            this.pbar_TotalProgress = new System.Windows.Forms.ProgressBar();
-            this.label4 = new System.Windows.Forms.Label();
+            this.lbl_ProgressHeading = new System.Windows.Forms.Label();
+            this.layoutProgress = new System.Windows.Forms.TableLayoutPanel();
             this.lbl_ProcessingFile = new System.Windows.Forms.Label();
+            this.lbl_FileCounter = new System.Windows.Forms.Label();
             this.pbar_ActualFile = new System.Windows.Forms.ProgressBar();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lbl_Overall = new System.Windows.Forms.Label();
+            this.pbar_TotalProgress = new System.Windows.Forms.ProgressBar();
+            this.layoutActions = new System.Windows.Forms.TableLayoutPanel();
+            this.lnk_About = new System.Windows.Forms.LinkLabel();
+            this.btn_StartStop = new System.Windows.Forms.Button();
+            this.layoutLogHeader = new System.Windows.Forms.TableLayoutPanel();
+            this.lbl_LogHeading = new System.Windows.Forms.Label();
+            this.btn_CopyLog = new System.Windows.Forms.Button();
+            this.btn_ClearLog = new System.Windows.Forms.Button();
+            this.btn_SaveLog = new System.Windows.Forms.Button();
             this.listViewLog = new System.Windows.Forms.ListView();
-            this.columnHeaderNb = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderInfo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
+            this.layoutRoot.SuspendLayout();
+            this.layoutSource.SuspendLayout();
+            this.layoutOutput.SuspendLayout();
+            this.layoutOptions.SuspendLayout();
+            this.layoutProgress.SuspendLayout();
+            this.layoutActions.SuspendLayout();
+            this.layoutLogHeader.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.chk_SourceFolder);
-            this.groupBox1.Controls.Add(this.tbox_OuputFolder);
-            this.groupBox1.Controls.Add(this.lbl_about);
-            this.groupBox1.Controls.Add(this.tbox_SourceFile);
-            this.groupBox1.Controls.Add(this.btn_SelectFile);
-            this.groupBox1.Controls.Add(this.btn_SelectFolder);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.groupBox1.Location = new System.Drawing.Point(10, 9);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(487, 100);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            // 
-            // chk_SourceFolder
-            // 
-            this.chk_SourceFolder.AutoSize = true;
-            this.chk_SourceFolder.Checked = true;
-            this.chk_SourceFolder.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_SourceFolder.Location = new System.Drawing.Point(8, 55);
-            this.chk_SourceFolder.Name = "chk_SourceFolder";
-            this.chk_SourceFolder.Size = new System.Drawing.Size(126, 17);
-            this.chk_SourceFolder.TabIndex = 7;
-            this.chk_SourceFolder.Text = "Copy to source folder";
-            this.chk_SourceFolder.UseVisualStyleBackColor = true;
-            this.chk_SourceFolder.CheckedChanged += new System.EventHandler(this.chk_SourceFolder_CheckedChanged);
-            // 
-            // tbox_OuputFolder
-            // 
-            this.tbox_OuputFolder.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.tbox_OuputFolder.Cursor = System.Windows.Forms.Cursors.Default;
-            this.tbox_OuputFolder.Enabled = false;
-            this.tbox_OuputFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.tbox_OuputFolder.Location = new System.Drawing.Point(5, 74);
-            this.tbox_OuputFolder.Name = "tbox_OuputFolder";
-            this.tbox_OuputFolder.ReadOnly = true;
-            this.tbox_OuputFolder.Size = new System.Drawing.Size(475, 20);
-            this.tbox_OuputFolder.TabIndex = 6;
-            this.tbox_OuputFolder.Text = "Click here to select an output folder";
-            this.tbox_OuputFolder.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.tbox_OuputFolder.Click += new System.EventHandler(this.tbox_OuputFolder_Click);
-            // 
-            // lbl_about
-            // 
-            this.lbl_about.AutoSize = true;
-            this.lbl_about.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.lbl_about.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_about.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.lbl_about.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
-            this.lbl_about.Location = new System.Drawing.Point(446, 16);
-            this.lbl_about.Name = "lbl_about";
-            this.lbl_about.Size = new System.Drawing.Size(35, 13);
-            this.lbl_about.TabIndex = 5;
-            this.lbl_about.Text = "About";
-            this.lbl_about.Click += new System.EventHandler(this.lbl_about_Click);
-            // 
+            //
+            // layoutRoot
+            //
+            this.layoutRoot.ColumnCount = 1;
+            this.layoutRoot.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutRoot.Controls.Add(this.lbl_SourceHeading, 0, 0);
+            this.layoutRoot.Controls.Add(this.layoutSource, 0, 1);
+            this.layoutRoot.Controls.Add(this.lbl_SourceHint, 0, 2);
+            this.layoutRoot.Controls.Add(this.lbl_OutputHeading, 0, 3);
+            this.layoutRoot.Controls.Add(this.layoutOutput, 0, 4);
+            this.layoutRoot.Controls.Add(this.lbl_ConvertHeading, 0, 5);
+            this.layoutRoot.Controls.Add(this.layoutOptions, 0, 6);
+            this.layoutRoot.Controls.Add(this.lbl_ProgressHeading, 0, 7);
+            this.layoutRoot.Controls.Add(this.layoutProgress, 0, 8);
+            this.layoutRoot.Controls.Add(this.layoutActions, 0, 9);
+            this.layoutRoot.Controls.Add(this.layoutLogHeader, 0, 10);
+            this.layoutRoot.Controls.Add(this.listViewLog, 0, 11);
+            this.layoutRoot.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutRoot.Location = new System.Drawing.Point(0, 0);
+            this.layoutRoot.Name = "layoutRoot";
+            this.layoutRoot.Padding = new System.Windows.Forms.Padding(12, 6, 12, 12);
+            this.layoutRoot.RowCount = 12;
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutRoot.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutRoot.Size = new System.Drawing.Size(624, 681);
+            this.layoutRoot.TabIndex = 0;
+            //
+            // lbl_SourceHeading
+            //
+            this.lbl_SourceHeading.AutoSize = true;
+            this.lbl_SourceHeading.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lbl_SourceHeading.Margin = new System.Windows.Forms.Padding(0, 6, 0, 3);
+            this.lbl_SourceHeading.Name = "lbl_SourceHeading";
+            this.lbl_SourceHeading.Text = "Source";
+            //
+            // layoutSource
+            //
+            this.layoutSource.AutoSize = true;
+            this.layoutSource.ColumnCount = 3;
+            this.layoutSource.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutSource.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutSource.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutSource.Controls.Add(this.tbox_SourceFile, 0, 0);
+            this.layoutSource.Controls.Add(this.btn_SelectFile, 1, 0);
+            this.layoutSource.Controls.Add(this.btn_SelectFolder, 2, 0);
+            this.layoutSource.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutSource.Margin = new System.Windows.Forms.Padding(0);
+            this.layoutSource.Name = "layoutSource";
+            this.layoutSource.RowCount = 1;
+            this.layoutSource.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutSource.TabIndex = 1;
+            //
             // tbox_SourceFile
-            // 
-            this.tbox_SourceFile.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.tbox_SourceFile.Cursor = System.Windows.Forms.Cursors.Default;
-            this.tbox_SourceFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.tbox_SourceFile.Location = new System.Drawing.Point(6, 32);
+            //
+            this.tbox_SourceFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbox_SourceFile.Margin = new System.Windows.Forms.Padding(0, 3, 6, 3);
             this.tbox_SourceFile.Name = "tbox_SourceFile";
+            this.tbox_SourceFile.PlaceholderText = "No file or folder selected";
             this.tbox_SourceFile.ReadOnly = true;
-            this.tbox_SourceFile.Size = new System.Drawing.Size(349, 20);
-            this.tbox_SourceFile.TabIndex = 5;
-            this.tbox_SourceFile.Text = "Choose a file or folder to convert";
-            this.tbox_SourceFile.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
+            this.tbox_SourceFile.TabStop = false;
+            //
             // btn_SelectFile
-            // 
-            this.btn_SelectFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
-            this.btn_SelectFile.Location = new System.Drawing.Point(359, 31);
+            //
+            this.btn_SelectFile.AutoSize = true;
+            this.btn_SelectFile.Margin = new System.Windows.Forms.Padding(0, 2, 6, 2);
+            this.btn_SelectFile.MinimumSize = new System.Drawing.Size(80, 27);
             this.btn_SelectFile.Name = "btn_SelectFile";
-            this.btn_SelectFile.Size = new System.Drawing.Size(60, 22);
-            this.btn_SelectFile.TabIndex = 6;
+            this.btn_SelectFile.TabIndex = 0;
             this.btn_SelectFile.Text = "File...";
             this.btn_SelectFile.UseVisualStyleBackColor = true;
             this.btn_SelectFile.Click += new System.EventHandler(this.btn_SelectFile_Click);
-            // 
+            //
             // btn_SelectFolder
-            // 
-            this.btn_SelectFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
-            this.btn_SelectFolder.Location = new System.Drawing.Point(421, 31);
+            //
+            this.btn_SelectFolder.AutoSize = true;
+            this.btn_SelectFolder.Margin = new System.Windows.Forms.Padding(0, 2, 0, 2);
+            this.btn_SelectFolder.MinimumSize = new System.Drawing.Size(80, 27);
             this.btn_SelectFolder.Name = "btn_SelectFolder";
-            this.btn_SelectFolder.Size = new System.Drawing.Size(60, 22);
-            this.btn_SelectFolder.TabIndex = 7;
+            this.btn_SelectFolder.TabIndex = 1;
             this.btn_SelectFolder.Text = "Folder...";
             this.btn_SelectFolder.UseVisualStyleBackColor = true;
             this.btn_SelectFolder.Click += new System.EventHandler(this.btn_SelectFolder_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 16);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(252, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Select a file or folder (subfolders are processed too)";
-            // 
-            // btn_StartStop
-            // 
-            this.btn_StartStop.Location = new System.Drawing.Point(5, 17);
-            this.btn_StartStop.Name = "btn_StartStop";
-            this.btn_StartStop.Size = new System.Drawing.Size(67, 115);
-            this.btn_StartStop.TabIndex = 2;
-            this.btn_StartStop.Text = "START";
-            this.btn_StartStop.UseVisualStyleBackColor = true;
-            this.btn_StartStop.Click += new System.EventHandler(this.btn_StartStop_Click);
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.chk_JoinImages);
-            this.groupBox2.Controls.Add(this.chk_NbPages);
-            this.groupBox2.Controls.Add(this.chk_pdf2cbr);
-            this.groupBox2.Controls.Add(this.chk_cbr2pdf);
-            this.groupBox2.Controls.Add(this.chk_ReduceSize);
-            this.groupBox2.Controls.Add(this.pbar_TotalProgress);
-            this.groupBox2.Controls.Add(this.btn_StartStop);
-            this.groupBox2.Controls.Add(this.label4);
-            this.groupBox2.Controls.Add(this.lbl_ProcessingFile);
-            this.groupBox2.Controls.Add(this.pbar_ActualFile);
-            this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.groupBox2.Location = new System.Drawing.Point(10, 115);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(486, 139);
-            this.groupBox2.TabIndex = 4;
-            this.groupBox2.TabStop = false;
-            // 
-            // chk_JoinImages
-            // 
-            this.chk_JoinImages.AutoSize = true;
-            this.chk_JoinImages.Location = new System.Drawing.Point(203, 40);
-            this.chk_JoinImages.Name = "chk_JoinImages";
-            this.chk_JoinImages.Size = new System.Drawing.Size(189, 17);
-            this.chk_JoinImages.TabIndex = 9;
-            this.chk_JoinImages.Text = "Merge images from same Pdf page";
-            this.chk_JoinImages.UseVisualStyleBackColor = true;
-            // 
-            // chk_NbPages
-            // 
-            this.chk_NbPages.AutoSize = true;
-            this.chk_NbPages.Checked = true;
-            this.chk_NbPages.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_NbPages.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
-            this.chk_NbPages.Location = new System.Drawing.Point(425, 17);
-            this.chk_NbPages.Name = "chk_NbPages";
-            this.chk_NbPages.Size = new System.Drawing.Size(55, 17);
-            this.chk_NbPages.TabIndex = 8;
-            this.chk_NbPages.Text = "P/Img";
-            this.chk_NbPages.UseVisualStyleBackColor = true;
-            this.chk_NbPages.Visible = false;
-            // 
-            // chk_pdf2cbr
-            // 
-            this.chk_pdf2cbr.AutoSize = true;
-            this.chk_pdf2cbr.Checked = true;
-            this.chk_pdf2cbr.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_pdf2cbr.Location = new System.Drawing.Point(78, 38);
-            this.chk_pdf2cbr.Name = "chk_pdf2cbr";
-            this.chk_pdf2cbr.Size = new System.Drawing.Size(80, 17);
-            this.chk_pdf2cbr.TabIndex = 7;
-            this.chk_pdf2cbr.Text = "PDF to Cbz";
-            this.chk_pdf2cbr.UseVisualStyleBackColor = true;
-            // 
+            //
+            // lbl_SourceHint
+            //
+            this.lbl_SourceHint.AutoSize = true;
+            this.lbl_SourceHint.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.lbl_SourceHint.Margin = new System.Windows.Forms.Padding(0, 0, 0, 3);
+            this.lbl_SourceHint.Name = "lbl_SourceHint";
+            this.lbl_SourceHint.Text = "You can also drag a file or folder onto this window. Subfolders are converted too.";
+            //
+            // lbl_OutputHeading
+            //
+            this.lbl_OutputHeading.AutoSize = true;
+            this.lbl_OutputHeading.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lbl_OutputHeading.Margin = new System.Windows.Forms.Padding(0, 10, 0, 3);
+            this.lbl_OutputHeading.Name = "lbl_OutputHeading";
+            this.lbl_OutputHeading.Text = "Output";
+            //
+            // layoutOutput
+            //
+            this.layoutOutput.AutoSize = true;
+            this.layoutOutput.ColumnCount = 4;
+            this.layoutOutput.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutOutput.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutOutput.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutOutput.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutOutput.Controls.Add(this.rb_SameFolder, 0, 0);
+            this.layoutOutput.Controls.Add(this.rb_CustomFolder, 1, 0);
+            this.layoutOutput.Controls.Add(this.tbox_OutputFolder, 2, 0);
+            this.layoutOutput.Controls.Add(this.btn_SelectOutput, 3, 0);
+            this.layoutOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutOutput.Margin = new System.Windows.Forms.Padding(0);
+            this.layoutOutput.Name = "layoutOutput";
+            this.layoutOutput.RowCount = 1;
+            this.layoutOutput.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutOutput.TabIndex = 2;
+            //
+            // rb_SameFolder
+            //
+            this.rb_SameFolder.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.rb_SameFolder.AutoSize = true;
+            this.rb_SameFolder.Checked = true;
+            this.rb_SameFolder.Margin = new System.Windows.Forms.Padding(0, 3, 12, 3);
+            this.rb_SameFolder.Name = "rb_SameFolder";
+            this.rb_SameFolder.TabIndex = 0;
+            this.rb_SameFolder.TabStop = true;
+            this.rb_SameFolder.Text = "Same folder as source";
+            this.rb_SameFolder.UseVisualStyleBackColor = true;
+            this.rb_SameFolder.CheckedChanged += new System.EventHandler(this.rb_OutputFolder_CheckedChanged);
+            //
+            // rb_CustomFolder
+            //
+            this.rb_CustomFolder.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.rb_CustomFolder.AutoSize = true;
+            this.rb_CustomFolder.Margin = new System.Windows.Forms.Padding(0, 3, 6, 3);
+            this.rb_CustomFolder.Name = "rb_CustomFolder";
+            this.rb_CustomFolder.TabIndex = 1;
+            this.rb_CustomFolder.Text = "Other folder:";
+            this.rb_CustomFolder.UseVisualStyleBackColor = true;
+            this.rb_CustomFolder.CheckedChanged += new System.EventHandler(this.rb_OutputFolder_CheckedChanged);
+            //
+            // tbox_OutputFolder
+            //
+            this.tbox_OutputFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbox_OutputFolder.Enabled = false;
+            this.tbox_OutputFolder.Margin = new System.Windows.Forms.Padding(0, 3, 6, 3);
+            this.tbox_OutputFolder.Name = "tbox_OutputFolder";
+            this.tbox_OutputFolder.PlaceholderText = "No output folder selected";
+            this.tbox_OutputFolder.ReadOnly = true;
+            this.tbox_OutputFolder.TabStop = false;
+            //
+            // btn_SelectOutput
+            //
+            this.btn_SelectOutput.AutoSize = true;
+            this.btn_SelectOutput.Enabled = false;
+            this.btn_SelectOutput.Margin = new System.Windows.Forms.Padding(0, 2, 0, 2);
+            this.btn_SelectOutput.MinimumSize = new System.Drawing.Size(80, 27);
+            this.btn_SelectOutput.Name = "btn_SelectOutput";
+            this.btn_SelectOutput.TabIndex = 2;
+            this.btn_SelectOutput.Text = "Browse...";
+            this.btn_SelectOutput.UseVisualStyleBackColor = true;
+            this.btn_SelectOutput.Click += new System.EventHandler(this.btn_SelectOutput_Click);
+            //
+            // lbl_ConvertHeading
+            //
+            this.lbl_ConvertHeading.AutoSize = true;
+            this.lbl_ConvertHeading.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lbl_ConvertHeading.Margin = new System.Windows.Forms.Padding(0, 10, 0, 0);
+            this.lbl_ConvertHeading.Name = "lbl_ConvertHeading";
+            this.lbl_ConvertHeading.Text = "Convert";
+            //
+            // layoutOptions
+            //
+            this.layoutOptions.AutoSize = true;
+            this.layoutOptions.Controls.Add(this.chk_cbr2pdf);
+            this.layoutOptions.Controls.Add(this.chk_pdf2cbr);
+            this.layoutOptions.Controls.Add(this.chk_JoinImages);
+            this.layoutOptions.Controls.Add(this.chk_ReduceSize);
+            this.layoutOptions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutOptions.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.layoutOptions.Margin = new System.Windows.Forms.Padding(0);
+            this.layoutOptions.Name = "layoutOptions";
+            this.layoutOptions.TabIndex = 3;
+            this.layoutOptions.WrapContents = false;
+            //
             // chk_cbr2pdf
-            // 
+            //
             this.chk_cbr2pdf.AutoSize = true;
             this.chk_cbr2pdf.Checked = true;
             this.chk_cbr2pdf.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_cbr2pdf.Location = new System.Drawing.Point(78, 17);
+            this.chk_cbr2pdf.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
             this.chk_cbr2pdf.Name = "chk_cbr2pdf";
-            this.chk_cbr2pdf.Size = new System.Drawing.Size(101, 17);
-            this.chk_cbr2pdf.TabIndex = 6;
-            this.chk_cbr2pdf.Text = "Cbr/Cbz to PDF";
+            this.chk_cbr2pdf.TabIndex = 0;
+            this.chk_cbr2pdf.Text = "CBR / CBZ  →  PDF";
             this.chk_cbr2pdf.UseVisualStyleBackColor = true;
-            // 
+            //
+            // chk_pdf2cbr
+            //
+            this.chk_pdf2cbr.AutoSize = true;
+            this.chk_pdf2cbr.Checked = true;
+            this.chk_pdf2cbr.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_pdf2cbr.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
+            this.chk_pdf2cbr.Name = "chk_pdf2cbr";
+            this.chk_pdf2cbr.TabIndex = 1;
+            this.chk_pdf2cbr.Text = "PDF  →  CBZ";
+            this.chk_pdf2cbr.UseVisualStyleBackColor = true;
+            this.chk_pdf2cbr.CheckedChanged += new System.EventHandler(this.chk_pdf2cbr_CheckedChanged);
+            //
+            // chk_JoinImages
+            //
+            this.chk_JoinImages.AutoSize = true;
+            this.chk_JoinImages.Margin = new System.Windows.Forms.Padding(22, 3, 0, 0);
+            this.chk_JoinImages.Name = "chk_JoinImages";
+            this.chk_JoinImages.TabIndex = 2;
+            this.chk_JoinImages.Text = "Merge sliced images back into whole pages";
+            this.chk_JoinImages.UseVisualStyleBackColor = true;
+            //
             // chk_ReduceSize
-            // 
+            //
             this.chk_ReduceSize.AutoSize = true;
-            this.chk_ReduceSize.Location = new System.Drawing.Point(203, 17);
+            this.chk_ReduceSize.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
             this.chk_ReduceSize.Name = "chk_ReduceSize";
-            this.chk_ReduceSize.Size = new System.Drawing.Size(193, 17);
-            this.chk_ReduceSize.TabIndex = 5;
+            this.chk_ReduceSize.TabIndex = 3;
             this.chk_ReduceSize.Text = "Compress images to reduce file size";
             this.chk_ReduceSize.UseVisualStyleBackColor = true;
-            // 
-            // pbar_TotalProgress
-            // 
-            this.pbar_TotalProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.pbar_TotalProgress.Location = new System.Drawing.Point(78, 117);
-            this.pbar_TotalProgress.Name = "pbar_TotalProgress";
-            this.pbar_TotalProgress.Size = new System.Drawing.Size(402, 16);
-            this.pbar_TotalProgress.TabIndex = 4;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(75, 101);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(34, 13);
-            this.label4.TabIndex = 3;
-            this.label4.Text = "Total:";
-            // 
+            //
+            // lbl_ProgressHeading
+            //
+            this.lbl_ProgressHeading.AutoSize = true;
+            this.lbl_ProgressHeading.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lbl_ProgressHeading.Margin = new System.Windows.Forms.Padding(0, 10, 0, 3);
+            this.lbl_ProgressHeading.Name = "lbl_ProgressHeading";
+            this.lbl_ProgressHeading.Text = "Progress";
+            //
+            // layoutProgress
+            //
+            this.layoutProgress.AutoSize = true;
+            this.layoutProgress.ColumnCount = 2;
+            this.layoutProgress.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutProgress.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutProgress.Controls.Add(this.lbl_ProcessingFile, 0, 0);
+            this.layoutProgress.Controls.Add(this.lbl_FileCounter, 1, 0);
+            this.layoutProgress.Controls.Add(this.pbar_ActualFile, 0, 1);
+            this.layoutProgress.Controls.Add(this.lbl_Overall, 0, 2);
+            this.layoutProgress.Controls.Add(this.pbar_TotalProgress, 0, 3);
+            this.layoutProgress.SetColumnSpan(this.pbar_ActualFile, 2);
+            this.layoutProgress.SetColumnSpan(this.lbl_Overall, 2);
+            this.layoutProgress.SetColumnSpan(this.pbar_TotalProgress, 2);
+            this.layoutProgress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutProgress.Margin = new System.Windows.Forms.Padding(0);
+            this.layoutProgress.Name = "layoutProgress";
+            this.layoutProgress.RowCount = 4;
+            this.layoutProgress.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutProgress.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutProgress.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutProgress.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutProgress.TabIndex = 4;
+            //
             // lbl_ProcessingFile
-            // 
-            this.lbl_ProcessingFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_ProcessingFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.lbl_ProcessingFile.Location = new System.Drawing.Point(143, 67);
+            //
+            this.lbl_ProcessingFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_ProcessingFile.AutoEllipsis = true;
+            this.lbl_ProcessingFile.Margin = new System.Windows.Forms.Padding(0, 0, 6, 3);
             this.lbl_ProcessingFile.Name = "lbl_ProcessingFile";
-            this.lbl_ProcessingFile.Size = new System.Drawing.Size(337, 13);
-            this.lbl_ProcessingFile.TabIndex = 2;
-            // 
+            this.lbl_ProcessingFile.Size = new System.Drawing.Size(100, 20);
+            this.lbl_ProcessingFile.Text = "Ready";
+            this.lbl_ProcessingFile.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            //
+            // lbl_FileCounter
+            //
+            this.lbl_FileCounter.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lbl_FileCounter.AutoSize = true;
+            this.lbl_FileCounter.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.lbl_FileCounter.Margin = new System.Windows.Forms.Padding(0, 0, 0, 3);
+            this.lbl_FileCounter.Name = "lbl_FileCounter";
+            //
             // pbar_ActualFile
-            // 
-            this.pbar_ActualFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.pbar_ActualFile.Location = new System.Drawing.Point(78, 83);
+            //
+            this.pbar_ActualFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbar_ActualFile.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
             this.pbar_ActualFile.Name = "pbar_ActualFile";
-            this.pbar_ActualFile.Size = new System.Drawing.Size(402, 15);
-            this.pbar_ActualFile.TabIndex = 1;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(75, 67);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(62, 13);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "Processing:";
-            // 
+            this.pbar_ActualFile.Size = new System.Drawing.Size(100, 16);
+            //
+            // lbl_Overall
+            //
+            this.lbl_Overall.AutoSize = true;
+            this.lbl_Overall.Margin = new System.Windows.Forms.Padding(0, 0, 0, 3);
+            this.lbl_Overall.Name = "lbl_Overall";
+            this.lbl_Overall.Text = "Overall";
+            //
+            // pbar_TotalProgress
+            //
+            this.pbar_TotalProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbar_TotalProgress.Margin = new System.Windows.Forms.Padding(0);
+            this.pbar_TotalProgress.Name = "pbar_TotalProgress";
+            this.pbar_TotalProgress.Size = new System.Drawing.Size(100, 16);
+            //
+            // layoutActions
+            //
+            this.layoutActions.AutoSize = true;
+            this.layoutActions.ColumnCount = 2;
+            this.layoutActions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutActions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutActions.Controls.Add(this.lnk_About, 0, 0);
+            this.layoutActions.Controls.Add(this.btn_StartStop, 1, 0);
+            this.layoutActions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutActions.Margin = new System.Windows.Forms.Padding(0, 12, 0, 0);
+            this.layoutActions.Name = "layoutActions";
+            this.layoutActions.RowCount = 1;
+            this.layoutActions.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutActions.TabIndex = 5;
+            //
+            // lnk_About
+            //
+            this.lnk_About.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lnk_About.AutoSize = true;
+            this.lnk_About.Margin = new System.Windows.Forms.Padding(0);
+            this.lnk_About.Name = "lnk_About";
+            this.lnk_About.TabIndex = 1;
+            this.lnk_About.TabStop = true;
+            this.lnk_About.Text = "About";
+            this.lnk_About.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnk_About_LinkClicked);
+            //
+            // btn_StartStop
+            //
+            this.btn_StartStop.Enabled = false;
+            this.btn_StartStop.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.btn_StartStop.Margin = new System.Windows.Forms.Padding(0);
+            this.btn_StartStop.Name = "btn_StartStop";
+            this.btn_StartStop.Size = new System.Drawing.Size(130, 36);
+            this.btn_StartStop.TabIndex = 0;
+            this.btn_StartStop.Text = "Start";
+            this.btn_StartStop.UseVisualStyleBackColor = true;
+            this.btn_StartStop.Click += new System.EventHandler(this.btn_StartStop_Click);
+            //
+            // layoutLogHeader
+            //
+            this.layoutLogHeader.AutoSize = true;
+            this.layoutLogHeader.ColumnCount = 4;
+            this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutLogHeader.Controls.Add(this.lbl_LogHeading, 0, 0);
+            this.layoutLogHeader.Controls.Add(this.btn_CopyLog, 1, 0);
+            this.layoutLogHeader.Controls.Add(this.btn_ClearLog, 2, 0);
+            this.layoutLogHeader.Controls.Add(this.btn_SaveLog, 3, 0);
+            this.layoutLogHeader.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutLogHeader.Margin = new System.Windows.Forms.Padding(0, 10, 0, 3);
+            this.layoutLogHeader.Name = "layoutLogHeader";
+            this.layoutLogHeader.RowCount = 1;
+            this.layoutLogHeader.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutLogHeader.TabIndex = 6;
+            //
+            // lbl_LogHeading
+            //
+            this.lbl_LogHeading.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lbl_LogHeading.AutoSize = true;
+            this.lbl_LogHeading.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lbl_LogHeading.Margin = new System.Windows.Forms.Padding(0);
+            this.lbl_LogHeading.Name = "lbl_LogHeading";
+            this.lbl_LogHeading.Text = "Warnings and errors";
+            //
+            // btn_CopyLog
+            //
+            this.btn_CopyLog.AutoSize = true;
+            this.btn_CopyLog.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.btn_CopyLog.Name = "btn_CopyLog";
+            this.btn_CopyLog.TabIndex = 0;
+            this.btn_CopyLog.Text = "Copy";
+            this.btn_CopyLog.UseVisualStyleBackColor = true;
+            this.btn_CopyLog.Click += new System.EventHandler(this.btn_CopyLog_Click);
+            //
+            // btn_ClearLog
+            //
+            this.btn_ClearLog.AutoSize = true;
+            this.btn_ClearLog.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.btn_ClearLog.Name = "btn_ClearLog";
+            this.btn_ClearLog.TabIndex = 1;
+            this.btn_ClearLog.Text = "Clear";
+            this.btn_ClearLog.UseVisualStyleBackColor = true;
+            this.btn_ClearLog.Click += new System.EventHandler(this.btn_ClearLog_Click);
+            //
+            // btn_SaveLog
+            //
+            this.btn_SaveLog.AutoSize = true;
+            this.btn_SaveLog.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.btn_SaveLog.Name = "btn_SaveLog";
+            this.btn_SaveLog.TabIndex = 2;
+            this.btn_SaveLog.Text = "Save...";
+            this.btn_SaveLog.UseVisualStyleBackColor = true;
+            this.btn_SaveLog.Click += new System.EventHandler(this.btn_SaveLog_Click);
+            //
             // listViewLog
-            // 
+            //
             this.listViewLog.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderNb,
+            this.columnHeaderTime,
+            this.columnHeaderType,
             this.columnHeaderInfo});
+            this.listViewLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewLog.FullRowSelect = true;
-            this.listViewLog.GridLines = true;
-            this.listViewLog.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
-            this.listViewLog.Location = new System.Drawing.Point(10, 260);
+            this.listViewLog.Margin = new System.Windows.Forms.Padding(0);
             this.listViewLog.Name = "listViewLog";
             this.listViewLog.ShowItemToolTips = true;
-            this.listViewLog.Size = new System.Drawing.Size(487, 200);
             this.listViewLog.TabIndex = 7;
             this.listViewLog.UseCompatibleStateImageBehavior = false;
             this.listViewLog.View = System.Windows.Forms.View.Details;
             this.listViewLog.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewLog_KeyDown);
             this.listViewLog.Resize += new System.EventHandler(this.listViewLog_Resize);
-            // 
-            // columnHeaderNb
-            // 
-            this.columnHeaderNb.Text = "n°";
-            this.columnHeaderNb.Width = 33;
-            // 
+            //
+            // columnHeaderTime
+            //
+            this.columnHeaderTime.Text = "Time";
+            this.columnHeaderTime.Width = 70;
+            //
+            // columnHeaderType
+            //
+            this.columnHeaderType.Text = "Type";
+            this.columnHeaderType.Width = 70;
+            //
             // columnHeaderInfo
-            // 
-            this.columnHeaderInfo.Text = "Informations";
+            //
+            this.columnHeaderInfo.Text = "Message";
             this.columnHeaderInfo.Width = 460;
-            // 
+            //
             // MainForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            //
+            this.AllowDrop = true;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(507, 470);
-            this.Controls.Add(this.listViewLog);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            this.ClientSize = new System.Drawing.Size(624, 681);
+            this.Controls.Add(this.layoutRoot);
+            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "CBR Converter";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            this.layoutRoot.ResumeLayout(false);
+            this.layoutRoot.PerformLayout();
+            this.layoutSource.ResumeLayout(false);
+            this.layoutSource.PerformLayout();
+            this.layoutOutput.ResumeLayout(false);
+            this.layoutOutput.PerformLayout();
+            this.layoutOptions.ResumeLayout(false);
+            this.layoutOptions.PerformLayout();
+            this.layoutProgress.ResumeLayout(false);
+            this.layoutProgress.PerformLayout();
+            this.layoutActions.ResumeLayout(false);
+            this.layoutActions.PerformLayout();
+            this.layoutLogHeader.ResumeLayout(false);
+            this.layoutLogHeader.PerformLayout();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.TableLayoutPanel layoutRoot;
+        private System.Windows.Forms.Label lbl_SourceHeading;
+        private System.Windows.Forms.TableLayoutPanel layoutSource;
         private System.Windows.Forms.TextBox tbox_SourceFile;
         private System.Windows.Forms.Button btn_SelectFile;
         private System.Windows.Forms.Button btn_SelectFolder;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button btn_StartStop;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.ProgressBar pbar_TotalProgress;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label lbl_ProcessingFile;
-        private System.Windows.Forms.ProgressBar pbar_ActualFile;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.CheckBox chk_ReduceSize;
-        private System.Windows.Forms.Label lbl_about;
-        private System.Windows.Forms.CheckBox chk_NbPages;
-        private System.Windows.Forms.CheckBox chk_pdf2cbr;
+        private System.Windows.Forms.Label lbl_SourceHint;
+        private System.Windows.Forms.Label lbl_OutputHeading;
+        private System.Windows.Forms.TableLayoutPanel layoutOutput;
+        private System.Windows.Forms.RadioButton rb_SameFolder;
+        private System.Windows.Forms.RadioButton rb_CustomFolder;
+        private System.Windows.Forms.TextBox tbox_OutputFolder;
+        private System.Windows.Forms.Button btn_SelectOutput;
+        private System.Windows.Forms.Label lbl_ConvertHeading;
+        private System.Windows.Forms.FlowLayoutPanel layoutOptions;
         private System.Windows.Forms.CheckBox chk_cbr2pdf;
+        private System.Windows.Forms.CheckBox chk_pdf2cbr;
         private System.Windows.Forms.CheckBox chk_JoinImages;
-        private System.Windows.Forms.CheckBox chk_SourceFolder;
-        private System.Windows.Forms.TextBox tbox_OuputFolder;
+        private System.Windows.Forms.CheckBox chk_ReduceSize;
+        private System.Windows.Forms.Label lbl_ProgressHeading;
+        private System.Windows.Forms.TableLayoutPanel layoutProgress;
+        private System.Windows.Forms.Label lbl_ProcessingFile;
+        private System.Windows.Forms.Label lbl_FileCounter;
+        private System.Windows.Forms.ProgressBar pbar_ActualFile;
+        private System.Windows.Forms.Label lbl_Overall;
+        private System.Windows.Forms.ProgressBar pbar_TotalProgress;
+        private System.Windows.Forms.TableLayoutPanel layoutActions;
+        private System.Windows.Forms.LinkLabel lnk_About;
+        private System.Windows.Forms.Button btn_StartStop;
+        private System.Windows.Forms.TableLayoutPanel layoutLogHeader;
+        private System.Windows.Forms.Label lbl_LogHeading;
+        private System.Windows.Forms.Button btn_CopyLog;
+        private System.Windows.Forms.Button btn_ClearLog;
+        private System.Windows.Forms.Button btn_SaveLog;
         private System.Windows.Forms.ListView listViewLog;
-        private System.Windows.Forms.ColumnHeader columnHeaderNb;
+        private System.Windows.Forms.ColumnHeader columnHeaderTime;
+        private System.Windows.Forms.ColumnHeader columnHeaderType;
         private System.Windows.Forms.ColumnHeader columnHeaderInfo;
     }
 }
-

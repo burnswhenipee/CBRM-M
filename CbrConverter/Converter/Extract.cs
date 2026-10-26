@@ -25,6 +25,7 @@ namespace CbrConverter
         public delegate void UpdateFileName(Extract m, EventArgs e);
         public event ErrorNotify evnt_ErrorNotify;
         public delegate void ErrorNotify(Extract m, string e);
+        public event ErrorNotify evnt_WarningNotify;
         public EventArgs e = null;
         double CurOneStep;
         bool IsSingleFile; //to link the 2 progress bar
@@ -47,12 +48,15 @@ namespace CbrConverter
             {
                 DataAccess.Instance.g_WorkingFile = DataAccess.Instance.g_WorkingDir;
                 IsSingleFile = true;
+                DataAccess.Instance.g_FileIndex = 0;
+                DataAccess.Instance.g_FileCount = 1;
                 //it's a file so i start the single extraction thread
                 //check if cbr
                 string ext = Path.GetExtension(DataAccess.Instance.g_WorkingFile).ToLower();
                 if ((string.Compare(ext, ".zip") == 0 || string.Compare(ext, ".rar") == 0 || string.Compare(ext, ".cbr") == 0 || string.Compare(ext, ".cbz") == 0) && _Cbr2Pdf)
                 {
 
+                    DataAccess.Instance.g_FileIndex = 1;
                     Thread extract = new Thread(ConvertCbrToPdf);
                     extract.Start();
                 }
@@ -92,8 +96,12 @@ namespace CbrConverter
                 IsSingleFile = false;
 
                 int nbFichiers = CountFiles(DataAccess.Instance.g_WorkingDir);
+                DataAccess.Instance.g_FileIndex = 0;
+                DataAccess.Instance.g_FileCount = nbFichiers;
+                if (nbFichiers == 0)
+                    evnt_WarningNotify(this, DataAccess.Instance.g_WorkingDir + " : no files to convert in this folder");
                 //calculate the value for the progression bar
-                double singval = (double)100 / nbFichiers;
+                double singval = nbFichiers > 0 ? (double)100 / nbFichiers : 0;
 
                 //Thread ext = new Thread(() => ExtractMultipleFiles(DataAccess.Instance.g_WorkingDir, singval));
                 //ext.Start();
@@ -226,8 +234,15 @@ namespace CbrConverter
             catch (Exception ex) //too lazy to catch specific exceptions, TODO in future!!
             {
                 DeleteWorkingDir();
-                DataAccess.Instance.g_Processing = false; //stopping the process
-                evnt_ErrorNotify(this, ex.Message.ToString());
+                if (IsSingleFile)
+                {
+                    DataAccess.Instance.g_Processing = false; //stopping the process
+                    DataAccess.Instance.g_WorkingFile = string.Empty;
+                    evnt_ErrorNotify(this, DataAccess.Instance.g_WorkingDir + " : " + ex.Message);
+                    evnt_UpdateFileName(this, e);
+                }
+                else
+                    throw; //reported by ExtractMultipleFiles, which goes on with the next file
             }
         }
 
@@ -272,9 +287,9 @@ namespace CbrConverter
             if (result.ImagesBeforeMerge != result.Pages)
             {
                 if (result.ImagesAfterMerge != result.ImagesBeforeMerge)
-                    evnt_ErrorNotify(this, string.Format("{0} : {1} images for {2} pages! Merged into {3} images.", currentFile, result.ImagesBeforeMerge, result.Pages, result.ImagesAfterMerge));
+                    evnt_WarningNotify(this, string.Format("{0} : {1} images for {2} pages! Merged into {3} images.", currentFile, result.ImagesBeforeMerge, result.Pages, result.ImagesAfterMerge));
                 else
-                    evnt_ErrorNotify(this, string.Format("{0} : {1} images for {2} pages!", currentFile, result.ImagesBeforeMerge, result.Pages));
+                    evnt_WarningNotify(this, string.Format("{0} : {1} images for {2} pages!", currentFile, result.ImagesBeforeMerge, result.Pages));
             }
 
             if (DataAccess.Instance.g_Processing)
@@ -329,7 +344,7 @@ namespace CbrConverter
             }
             catch (Exception ex)
             {
-                evnt_ErrorNotify(this, "Could not delete temporary folder " + temporaryDir + " : " + ex.Message);
+                evnt_WarningNotify(this, "Could not delete temporary folder " + temporaryDir + " : " + ex.Message);
             }
         }
 
@@ -349,14 +364,26 @@ namespace CbrConverter
                 candidate = string.Format("{0} ({1}){2}", outputBase, i++, extension);
             } while (File.Exists(candidate));
 
-            evnt_ErrorNotify(this, string.Format("{0} already exists, renaming to {1}", path, Path.GetFileName(candidate)));
+            evnt_WarningNotify(this, string.Format("{0} already exists, renaming to {1}", path, Path.GetFileName(candidate)));
             return candidate;
         }
 
         private int CountFiles(string dir)
         {
-            string[] files = Directory.GetFiles(dir, "*.pdf", SearchOption.AllDirectories);
-            return files.Length;
+            return Directory.GetFiles(dir, "*", SearchOption.AllDirectories).Count(IsConvertible);
+        }
+
+        /// <summary>
+        /// True if the file is one of the types selected for conversion
+        /// </summary>
+        private bool IsConvertible(string file)
+        {
+            string ext = Path.GetExtension(file).ToLower();
+            if (ext == ".cbr" || ext == ".rar" || ext == ".cbz" || ext == ".zip")
+                return _Cbr2Pdf;
+            if (ext == ".pdf")
+                return _Pdf2Cbz;
+            return false;
         }
 
         /// <summary>
@@ -381,9 +408,10 @@ namespace CbrConverter
             //call the ExtractSingleFile for each file
             foreach (string file in files)
             {
-                if (DataAccess.Instance.g_Processing) //this is to stop the thread if stop button is pressed
+                if (DataAccess.Instance.g_Processing && IsConvertible(file)) //this is to stop the thread if stop button is pressed
                 {
                     DataAccess.Instance.g_WorkingFile = file;
+                    DataAccess.Instance.g_FileIndex++;
                     try
                     {
                         string ext = Path.GetExtension(DataAccess.Instance.g_WorkingFile).ToLower();
@@ -395,15 +423,15 @@ namespace CbrConverter
                         {
                             ConvertPdfToCbr(file);
                         }
-
-                        //updating the total progression bar
-                        DataAccess.Instance.g_totProgress += singval;
-                        evnt_UpdatTotBar(this, e);
                     }
                     catch (Exception a)
                     {
                         evnt_ErrorNotify(this, file + " : " + a.Message.ToString());
                     }
+
+                    //updating the total progression bar
+                    DataAccess.Instance.g_totProgress += singval;
+                    evnt_UpdatTotBar(this, e);
                 }
             }
         }

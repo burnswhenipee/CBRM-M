@@ -24,7 +24,7 @@ namespace CbrConverter
 
         private void linkLabelInfo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(((LinkLabel)sender).Text);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(((LinkLabel)sender).Text) { UseShellExecute = true });
         }
     }
 }
