@@ -39,14 +39,16 @@ namespace CbrConverter
             }
             else
             {
-                if (((chk_cbr2pdf.Checked) || (chk_pdf2cbr.Checked))&&(_fileSelected))
+                bool cbr2pdf = chk_cbr2pdf.Checked && chk_cbr2pdf.Enabled;
+                bool pdf2cbr = chk_pdf2cbr.Checked && chk_pdf2cbr.Enabled;
+                if ((cbr2pdf || pdf2cbr) && (_fileSelected))
                 {
                     btn_StartStop.Text = "STOP";
                     DataAccess.Instance.g_ReduceSize = chk_ReduceSize.Checked;
                     DataAccess.Instance.g_Processing = true;
                     Extract ex = new Extract();
                     this.Subscribe(ex);
-                    ex.BeginExtraction(chk_cbr2pdf.Checked, chk_pdf2cbr.Checked, chk_ReduceSize.Checked, chk_NbPages.Checked, chk_JoinImages.Checked, chk_NbPages.Checked);
+                    ex.BeginExtraction(cbr2pdf, pdf2cbr, chk_ReduceSize.Checked, chk_NbPages.Checked, chk_JoinImages.Checked, chk_NbPages.Checked);
                 }
             }
         }
@@ -114,69 +116,67 @@ namespace CbrConverter
 
         }
 
-        /// <summary>
-        /// User clicked on textbox, opendialog to select file or folder
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void tbox_SourceFile_Click(object sender, EventArgs e)
+        private void btn_SelectFile_Click(object sender, EventArgs e)
         {
-            var SelectFolderDlg = new FolderBrowserDialogEx();
-            SelectFolderDlg.Description = "Select a file or folder:"; //message
-            SelectFolderDlg.ShowNewFolderButton = true;
-            SelectFolderDlg.ShowEditBox = false;                     //editbox 
-            SelectFolderDlg.ShowBothFilesAndFolders = true;          //show files and folders
-            SelectFolderDlg.RootFolder = System.Environment.SpecialFolder.MyComputer; //start from computer
-            SelectFolderDlg.SelectedPath = _lastSourcePath;          //reopen where we were last
-
-            DialogResult result = SelectFolderDlg.ShowDialog();
-            if (result == DialogResult.OK)
+            using (var dlg = new OpenFileDialog())
             {
-                _lastSourcePath = SelectFolderDlg.SelectedPath;
-                DataAccess.Instance.g_WorkingDir = SelectFolderDlg.SelectedPath;
-                tbox_SourceFile.Text = SelectFolderDlg.SelectedPath;
+                dlg.Title = "Select a file to convert";
+                dlg.Filter = "Comics and PDFs (*.cbr;*.cbz;*.rar;*.zip;*.pdf)|*.cbr;*.cbz;*.rar;*.zip;*.pdf|All files (*.*)|*.*";
+                dlg.InitialDirectory = LastSourceFolder(); //reopen where we were last
+                if (File.Exists(_lastSourcePath))
+                    dlg.FileName = Path.GetFileName(_lastSourcePath);
 
-                //check if file or folder
-                if (File.Exists(DataAccess.Instance.g_WorkingDir)) //is a file
-                {
-                    //check the extension
-                    var ext = Path.GetExtension(SelectFolderDlg.SelectedPath).ToLower();
-                    if (ext == ".pdf")
-                    {
-                        chk_cbr2pdf.Checked = false;
-                        chk_cbr2pdf.Enabled = false;
-                        chk_pdf2cbr.Checked = true;
-                        chk_pdf2cbr.Enabled = true;
-                        chk_JoinImages.Enabled = true;
-
-                    }
-                    else if (ext == ".cbr" || ext == ".cbz")
-                    {
-                        chk_cbr2pdf.Checked = true;
-                        chk_cbr2pdf.Enabled = true;
-                        chk_pdf2cbr.Checked = false;
-                        chk_pdf2cbr.Enabled = false;
-                        chk_JoinImages.Enabled = false;
-                    }
-                }
-                else //is a folder
-                {
-                    chk_cbr2pdf.Checked = true;
-                    chk_cbr2pdf.Enabled = true;
-                    chk_pdf2cbr.Checked = true;
-                    chk_pdf2cbr.Enabled = true;
-                }
-
-                _fileSelected = true;
-
-                if (this.chk_SourceFolder.Checked)
-                {
-                    _outputFolderSelected = true;
-                    DataAccess.Instance.g_Output_dir = Path.GetDirectoryName(SelectFolderDlg.SelectedPath);
-                    this.tbox_OuputFolder.Text = this.tbox_SourceFile.Text;
-                }
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                    SetSource(dlg.FileName);
             }
+        }
 
+        private void btn_SelectFolder_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new FolderBrowserDialog())
+            {
+                dlg.Description = "Select a folder to convert (subfolders are processed too)";
+                dlg.UseDescriptionForTitle = true;
+                dlg.SelectedPath = LastSourceFolder(); //reopen where we were last
+
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                    SetSource(dlg.SelectedPath);
+            }
+        }
+
+        /// <summary>
+        /// Folder of the last selected source (the file's folder if a file was selected)
+        /// </summary>
+        private string LastSourceFolder()
+        {
+            if (File.Exists(_lastSourcePath))
+                return Path.GetDirectoryName(_lastSourcePath);
+            return _lastSourcePath;
+        }
+
+        private void SetSource(string path)
+        {
+            _lastSourcePath = path;
+            DataAccess.Instance.g_WorkingDir = path;
+            tbox_SourceFile.Text = path;
+
+            // only enable the conversions that apply to the selection, but keep what the user ticked
+            string ext = File.Exists(path) ? Path.GetExtension(path).ToLower() : string.Empty;
+            bool isFolder = Directory.Exists(path);
+            bool isArchive = ext == ".cbr" || ext == ".cbz" || ext == ".rar" || ext == ".zip";
+            chk_cbr2pdf.Enabled = isFolder || isArchive;
+            chk_pdf2cbr.Enabled = isFolder || ext == ".pdf";
+            chk_JoinImages.Enabled = chk_pdf2cbr.Enabled;
+            chk_NbPages.Enabled = chk_pdf2cbr.Enabled;
+
+            _fileSelected = true;
+
+            if (this.chk_SourceFolder.Checked)
+            {
+                _outputFolderSelected = true;
+                DataAccess.Instance.g_Output_dir = Path.GetDirectoryName(path);
+                this.tbox_OuputFolder.Text = this.tbox_SourceFile.Text;
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -229,26 +229,19 @@ namespace CbrConverter
 
         private void tbox_OuputFolder_Click(object sender, EventArgs e)
         {
-            var SelectFolderDlg = new FolderBrowserDialogEx();
-            SelectFolderDlg.Description = "Select a folder:"; //message
-            SelectFolderDlg.ShowNewFolderButton = true;
-            SelectFolderDlg.ShowEditBox = false;                     //editbox 
-            SelectFolderDlg.ShowBothFilesAndFolders = false;          //show files and folders
-            SelectFolderDlg.RootFolder = System.Environment.SpecialFolder.MyComputer; //start from computer
-            SelectFolderDlg.SelectedPath = _lastOutputPath;          //reopen where we were last
-
-            DialogResult result = SelectFolderDlg.ShowDialog();
-            if (result == DialogResult.OK)
+            using (var dlg = new FolderBrowserDialog())
             {
-                _lastOutputPath = SelectFolderDlg.SelectedPath;
-                DataAccess.Instance.g_Output_dir = SelectFolderDlg.SelectedPath;
-                tbox_OuputFolder.Text = SelectFolderDlg.SelectedPath;
+                dlg.Description = "Select an output folder";
+                dlg.UseDescriptionForTitle = true;
+                dlg.SelectedPath = _lastOutputPath != string.Empty ? _lastOutputPath : LastSourceFolder(); //reopen where we were last
 
-                _outputFolderSelected = true;
-
-                if (this.chk_SourceFolder.Checked)
+                if (dlg.ShowDialog(this) == DialogResult.OK)
                 {
-                    this.tbox_OuputFolder.Text = this.tbox_SourceFile.Text;
+                    _lastOutputPath = dlg.SelectedPath;
+                    DataAccess.Instance.g_Output_dir = dlg.SelectedPath;
+                    tbox_OuputFolder.Text = dlg.SelectedPath;
+
+                    _outputFolderSelected = true;
                 }
             }
         }

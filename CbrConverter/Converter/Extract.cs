@@ -16,6 +16,7 @@ namespace CbrConverter
     public class Extract
     {
         string temporaryDir;
+        string outputBase; //output path without extension
         public event UpdateCurrentBar evnt_UpdateCurBar;
         public delegate void UpdateCurrentBar();
         public event UpdateTotalBar evnt_UpdatTotBar;
@@ -138,17 +139,15 @@ namespace CbrConverter
 
                 //creating directory for extraction      
                 string tempFileName = Path.GetFileName(DataAccess.Instance.g_WorkingFile);
-                temporaryDir = DataAccess.Instance.g_WorkingFile;
-                temporaryDir = temporaryDir.Replace(tempFileName, Path.GetFileNameWithoutExtension(DataAccess.Instance.g_WorkingFile));
+                outputBase = DataAccess.Instance.g_WorkingFile;
+                outputBase = outputBase.Replace(tempFileName, Path.GetFileNameWithoutExtension(DataAccess.Instance.g_WorkingFile));
 
                 // replace with new output
                 var SourceFolder = DataAccess.Instance.g_WorkingDir.Replace(Path.GetFileName(DataAccess.Instance.g_WorkingDir), "");
-                temporaryDir = temporaryDir.Replace(SourceFolder, DataAccess.Instance.g_Output_dir + "\\");
+                outputBase = outputBase.Replace(SourceFolder, DataAccess.Instance.g_Output_dir + "\\");
+                Directory.CreateDirectory(Path.GetDirectoryName(outputBase));
 
-                //if the directory already exist, delete it
-                if (Directory.Exists(temporaryDir))
-                    Directory.Delete(temporaryDir, true);
-                Directory.CreateDirectory(temporaryDir);
+                temporaryDir = CreateWorkingDir();
 
 
                 //inizio test
@@ -204,7 +203,7 @@ namespace CbrConverter
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 //deleting temp dir
-                Directory.Delete(temporaryDir, true);
+                DeleteWorkingDir();
 
                 //update progress bar
                 DataAccess.Instance.g_curProgress = 0;
@@ -226,6 +225,7 @@ namespace CbrConverter
             }
             catch (Exception ex) //too lazy to catch specific exceptions, TODO in future!!
             {
+                DeleteWorkingDir();
                 DataAccess.Instance.g_Processing = false; //stopping the process
                 evnt_ErrorNotify(this, ex.Message.ToString());
             }
@@ -239,17 +239,15 @@ namespace CbrConverter
             evnt_UpdateFileName(this, e);
             //creating directory for extraction      
             string tempFileName = Path.GetFileName(currentFile);
-            temporaryDir = currentFile;
-            temporaryDir = temporaryDir.Replace(tempFileName, Path.GetFileNameWithoutExtension(currentFile));
+            outputBase = currentFile;
+            outputBase = outputBase.Replace(tempFileName, Path.GetFileNameWithoutExtension(currentFile));
 
             // replace with new output
             var SourceFolder = DataAccess.Instance.g_WorkingDir.Replace(Path.GetFileName(DataAccess.Instance.g_WorkingDir), "");
-            temporaryDir = temporaryDir.Replace(SourceFolder, DataAccess.Instance.g_Output_dir + "\\");
+            outputBase = outputBase.Replace(SourceFolder, DataAccess.Instance.g_Output_dir + "\\");
+            Directory.CreateDirectory(Path.GetDirectoryName(outputBase));
 
-            //if the directory already exist, delete it
-            if (Directory.Exists(temporaryDir))
-                Directory.Delete(temporaryDir, true);
-            Directory.CreateDirectory(temporaryDir);
+            temporaryDir = CreateWorkingDir();
 
 
             int divider;
@@ -259,7 +257,16 @@ namespace CbrConverter
                 divider = 80;
 
 
-            var result = PdfFunctions.PDF_ExportImage(currentFile, temporaryDir, divider, _CheckImagesPages, _JoinImages);
+            PdfExtractionResult result;
+            try
+            {
+                result = PdfFunctions.PDF_ExportImage(currentFile, temporaryDir, divider, _CheckImagesPages, _JoinImages);
+            }
+            catch
+            {
+                DeleteWorkingDir();
+                throw;
+            }
 
             if (result.ImagesAfterMerge != result.Pages)
                 evnt_ErrorNotify(this, string.Format("{0} : {1} images for {2} pages!", currentFile, result.ImagesAfterMerge, result.Pages));
@@ -270,11 +277,8 @@ namespace CbrConverter
                 if (_ReduceSize)
                     CompressImage();
 
-                string savedfile = temporaryDir + ".cbz";
+                string savedfile = GetAvailableOutputPath(".cbz");
 
-
-                if (File.Exists(savedfile))
-                    File.Delete(savedfile);
                 ZipFile.CreateFromDirectory(temporaryDir, savedfile);
 
                 //waiting the new sharpcompress release to fix it
@@ -287,8 +291,7 @@ namespace CbrConverter
 
 
             //delete the temp dir
-            if (Directory.Exists(temporaryDir))
-                Directory.Delete(temporaryDir, true);
+            DeleteWorkingDir();
 
 
 
@@ -299,6 +302,49 @@ namespace CbrConverter
                 DataAccess.Instance.g_WorkingFile = string.Empty;
                 evnt_UpdateFileName(this, e);
             }
+        }
+
+        /// <summary>
+        /// Create an empty working folder in the system temp folder, so nothing next to the output is ever touched
+        /// </summary>
+        private string CreateWorkingDir()
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "CbrConverter", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        private void DeleteWorkingDir()
+        {
+            try
+            {
+                if (Directory.Exists(temporaryDir))
+                    Directory.Delete(temporaryDir, true);
+            }
+            catch (Exception ex)
+            {
+                evnt_ErrorNotify(this, "Could not delete temporary folder " + temporaryDir + " : " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Output path for the current file; if it already exists, add " (1)", " (2)"... instead of overwriting
+        /// </summary>
+        private string GetAvailableOutputPath(string extension)
+        {
+            string path = outputBase + extension;
+            if (!File.Exists(path))
+                return path;
+
+            int i = 1;
+            string candidate;
+            do
+            {
+                candidate = string.Format("{0} ({1}){2}", outputBase, i++, extension);
+            } while (File.Exists(candidate));
+
+            evnt_ErrorNotify(this, string.Format("{0} already exists, renaming to {1}", path, Path.GetFileName(candidate)));
+            return candidate;
         }
 
         private int CountFiles(string dir)
@@ -364,7 +410,7 @@ namespace CbrConverter
             // Create a new PDF document
             var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4);
 
-            string filename = temporaryDir + ".pdf";
+            string filename = GetAvailableOutputPath(".pdf");
             var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, new FileStream(filename, FileMode.Create));
             document.Open();
 

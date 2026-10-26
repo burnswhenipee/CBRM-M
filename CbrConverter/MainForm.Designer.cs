@@ -34,6 +34,8 @@
             this.tbox_OuputFolder = new System.Windows.Forms.TextBox();
             this.lbl_about = new System.Windows.Forms.Label();
             this.tbox_SourceFile = new System.Windows.Forms.TextBox();
+            this.btn_SelectFile = new System.Windows.Forms.Button();
+            this.btn_SelectFolder = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.btn_StartStop = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -60,6 +62,8 @@
             this.groupBox1.Controls.Add(this.tbox_OuputFolder);
             this.groupBox1.Controls.Add(this.lbl_about);
             this.groupBox1.Controls.Add(this.tbox_SourceFile);
+            this.groupBox1.Controls.Add(this.btn_SelectFile);
+            this.groupBox1.Controls.Add(this.btn_SelectFolder);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.groupBox1.Location = new System.Drawing.Point(10, 9);
@@ -92,7 +96,7 @@
             this.tbox_OuputFolder.ReadOnly = true;
             this.tbox_OuputFolder.Size = new System.Drawing.Size(475, 20);
             this.tbox_OuputFolder.TabIndex = 6;
-            this.tbox_OuputFolder.Text = "Click here to select an ouput folder";
+            this.tbox_OuputFolder.Text = "Click here to select an output folder";
             this.tbox_OuputFolder.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.tbox_OuputFolder.Click += new System.EventHandler(this.tbox_OuputFolder_Click);
             // 
@@ -118,11 +122,32 @@
             this.tbox_SourceFile.Location = new System.Drawing.Point(6, 32);
             this.tbox_SourceFile.Name = "tbox_SourceFile";
             this.tbox_SourceFile.ReadOnly = true;
-            this.tbox_SourceFile.Size = new System.Drawing.Size(475, 20);
+            this.tbox_SourceFile.Size = new System.Drawing.Size(349, 20);
             this.tbox_SourceFile.TabIndex = 5;
-            this.tbox_SourceFile.Text = "Click here to select a file or folder";
+            this.tbox_SourceFile.Text = "Choose a file or folder to convert";
             this.tbox_SourceFile.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.tbox_SourceFile.Click += new System.EventHandler(this.tbox_SourceFile_Click);
+            // 
+            // btn_SelectFile
+            // 
+            this.btn_SelectFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
+            this.btn_SelectFile.Location = new System.Drawing.Point(359, 31);
+            this.btn_SelectFile.Name = "btn_SelectFile";
+            this.btn_SelectFile.Size = new System.Drawing.Size(60, 22);
+            this.btn_SelectFile.TabIndex = 6;
+            this.btn_SelectFile.Text = "File...";
+            this.btn_SelectFile.UseVisualStyleBackColor = true;
+            this.btn_SelectFile.Click += new System.EventHandler(this.btn_SelectFile_Click);
+            // 
+            // btn_SelectFolder
+            // 
+            this.btn_SelectFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
+            this.btn_SelectFolder.Location = new System.Drawing.Point(421, 31);
+            this.btn_SelectFolder.Name = "btn_SelectFolder";
+            this.btn_SelectFolder.Size = new System.Drawing.Size(60, 22);
+            this.btn_SelectFolder.TabIndex = 7;
+            this.btn_SelectFolder.Text = "Folder...";
+            this.btn_SelectFolder.UseVisualStyleBackColor = true;
+            this.btn_SelectFolder.Click += new System.EventHandler(this.btn_SelectFolder_Click);
             // 
             // label1
             // 
@@ -131,7 +156,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(252, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Select File or Folder (files will be process recursively)";
+            this.label1.Text = "Select a file or folder (subfolders are processed too)";
             // 
             // btn_StartStop
             // 
@@ -320,6 +345,8 @@
 
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox tbox_SourceFile;
+        private System.Windows.Forms.Button btn_SelectFile;
+        private System.Windows.Forms.Button btn_SelectFolder;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btn_StartStop;
         private System.Windows.Forms.GroupBox groupBox2;
