@@ -191,8 +191,6 @@
             // chk_JoinImages
             // 
             this.chk_JoinImages.AutoSize = true;
-            this.chk_JoinImages.Checked = true;
-            this.chk_JoinImages.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chk_JoinImages.Location = new System.Drawing.Point(203, 40);
             this.chk_JoinImages.Name = "chk_JoinImages";
             this.chk_JoinImages.Size = new System.Drawing.Size(189, 17);
