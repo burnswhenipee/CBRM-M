@@ -268,8 +268,14 @@ namespace CbrConverter
                 throw;
             }
 
-            if (result.ImagesAfterMerge != result.Pages)
-                evnt_ErrorNotify(this, string.Format("{0} : {1} images for {2} pages!", currentFile, result.ImagesAfterMerge, result.Pages));
+            // report sliced pages even when they were merged back together
+            if (result.ImagesBeforeMerge != result.Pages)
+            {
+                if (result.ImagesAfterMerge != result.ImagesBeforeMerge)
+                    evnt_ErrorNotify(this, string.Format("{0} : {1} images for {2} pages! Merged into {3} images.", currentFile, result.ImagesBeforeMerge, result.Pages, result.ImagesAfterMerge));
+                else
+                    evnt_ErrorNotify(this, string.Format("{0} : {1} images for {2} pages!", currentFile, result.ImagesBeforeMerge, result.Pages));
+            }
 
             if (DataAccess.Instance.g_Processing)
             {
