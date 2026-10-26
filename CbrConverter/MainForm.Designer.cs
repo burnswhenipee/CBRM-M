@@ -47,7 +47,6 @@
             this.lbl_ProcessingFile = new System.Windows.Forms.Label();
             this.pbar_ActualFile = new System.Windows.Forms.ProgressBar();
             this.label2 = new System.Windows.Forms.Label();
-            this.btn_showlog = new System.Windows.Forms.Button();
             this.listViewLog = new System.Windows.Forms.ListView();
             this.columnHeaderNb = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderInfo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -62,6 +61,7 @@
             this.groupBox1.Controls.Add(this.lbl_about);
             this.groupBox1.Controls.Add(this.tbox_SourceFile);
             this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.groupBox1.Location = new System.Drawing.Point(10, 9);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(487, 100);
@@ -86,6 +86,7 @@
             this.tbox_OuputFolder.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.tbox_OuputFolder.Cursor = System.Windows.Forms.Cursors.Default;
             this.tbox_OuputFolder.Enabled = false;
+            this.tbox_OuputFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.tbox_OuputFolder.Location = new System.Drawing.Point(5, 74);
             this.tbox_OuputFolder.Name = "tbox_OuputFolder";
             this.tbox_OuputFolder.ReadOnly = true;
@@ -101,6 +102,7 @@
             this.lbl_about.Cursor = System.Windows.Forms.Cursors.Hand;
             this.lbl_about.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_about.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.lbl_about.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
             this.lbl_about.Location = new System.Drawing.Point(446, 16);
             this.lbl_about.Name = "lbl_about";
             this.lbl_about.Size = new System.Drawing.Size(35, 13);
@@ -112,6 +114,7 @@
             // 
             this.tbox_SourceFile.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.tbox_SourceFile.Cursor = System.Windows.Forms.Cursors.Default;
+            this.tbox_SourceFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.tbox_SourceFile.Location = new System.Drawing.Point(6, 32);
             this.tbox_SourceFile.Name = "tbox_SourceFile";
             this.tbox_SourceFile.ReadOnly = true;
@@ -153,6 +156,7 @@
             this.groupBox2.Controls.Add(this.lbl_ProcessingFile);
             this.groupBox2.Controls.Add(this.pbar_ActualFile);
             this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.groupBox2.Location = new System.Drawing.Point(10, 115);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(486, 139);
@@ -176,6 +180,7 @@
             this.chk_NbPages.AutoSize = true;
             this.chk_NbPages.Checked = true;
             this.chk_NbPages.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_NbPages.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
             this.chk_NbPages.Location = new System.Drawing.Point(425, 17);
             this.chk_NbPages.Name = "chk_NbPages";
             this.chk_NbPages.Size = new System.Drawing.Size(55, 17);
@@ -220,6 +225,7 @@
             // 
             // pbar_TotalProgress
             // 
+            this.pbar_TotalProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.pbar_TotalProgress.Location = new System.Drawing.Point(78, 117);
             this.pbar_TotalProgress.Name = "pbar_TotalProgress";
             this.pbar_TotalProgress.Size = new System.Drawing.Size(402, 16);
@@ -237,6 +243,7 @@
             // lbl_ProcessingFile
             // 
             this.lbl_ProcessingFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_ProcessingFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.lbl_ProcessingFile.Location = new System.Drawing.Point(143, 67);
             this.lbl_ProcessingFile.Name = "lbl_ProcessingFile";
             this.lbl_ProcessingFile.Size = new System.Drawing.Size(337, 13);
@@ -244,6 +251,7 @@
             // 
             // pbar_ActualFile
             // 
+            this.pbar_ActualFile.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this.pbar_ActualFile.Location = new System.Drawing.Point(78, 83);
             this.pbar_ActualFile.Name = "pbar_ActualFile";
             this.pbar_ActualFile.Size = new System.Drawing.Size(402, 15);
@@ -258,19 +266,6 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "Processing:";
             // 
-            // btn_showlog
-            // 
-            this.btn_showlog.FlatAppearance.BorderColor = System.Drawing.SystemColors.Control;
-            this.btn_showlog.FlatAppearance.BorderSize = 0;
-            this.btn_showlog.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_showlog.Image = global::CbrConverter.Properties.Resources.arrow_double_down;
-            this.btn_showlog.Location = new System.Drawing.Point(235, 260);
-            this.btn_showlog.Name = "btn_showlog";
-            this.btn_showlog.Size = new System.Drawing.Size(39, 28);
-            this.btn_showlog.TabIndex = 6;
-            this.btn_showlog.UseVisualStyleBackColor = true;
-            this.btn_showlog.Click += new System.EventHandler(this.btn_showlog_Click);
-            // 
             // listViewLog
             // 
             this.listViewLog.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -278,12 +273,16 @@
             this.columnHeaderInfo});
             this.listViewLog.FullRowSelect = true;
             this.listViewLog.GridLines = true;
-            this.listViewLog.Location = new System.Drawing.Point(3, 289);
+            this.listViewLog.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
+            this.listViewLog.Location = new System.Drawing.Point(10, 260);
             this.listViewLog.Name = "listViewLog";
-            this.listViewLog.Size = new System.Drawing.Size(503, 322);
+            this.listViewLog.ShowItemToolTips = true;
+            this.listViewLog.Size = new System.Drawing.Size(487, 200);
             this.listViewLog.TabIndex = 7;
             this.listViewLog.UseCompatibleStateImageBehavior = false;
             this.listViewLog.View = System.Windows.Forms.View.Details;
+            this.listViewLog.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewLog_KeyDown);
+            this.listViewLog.Resize += new System.EventHandler(this.listViewLog_Resize);
             // 
             // columnHeaderNb
             // 
@@ -299,14 +298,12 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(509, 287);
+            this.ClientSize = new System.Drawing.Size(507, 470);
             this.Controls.Add(this.listViewLog);
-            this.Controls.Add(this.btn_showlog);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "CBR Converter";
@@ -337,7 +334,6 @@
         private System.Windows.Forms.CheckBox chk_pdf2cbr;
         private System.Windows.Forms.CheckBox chk_cbr2pdf;
         private System.Windows.Forms.CheckBox chk_JoinImages;
-        private System.Windows.Forms.Button btn_showlog;
         private System.Windows.Forms.CheckBox chk_SourceFolder;
         private System.Windows.Forms.TextBox tbox_OuputFolder;
         private System.Windows.Forms.ListView listViewLog;

@@ -16,11 +16,14 @@ namespace CbrConverter
         bool _fileSelected = false;
         bool _outputFolderSelected = false;
 
+        // last locations picked in each dialog, remembered for this session only
+        string _lastSourcePath = string.Empty;
+        string _lastOutputPath = string.Empty;
+
         public MainForm()
         {
             InitializeComponent();
-            ToolTip tooltip = new ToolTip();
-            tooltip.SetToolTip(this.btn_showlog, "Show/Hide Logs");
+            this.MinimumSize = new Size(this.Width, this.Height - 120);
         }
 
        
@@ -100,9 +103,12 @@ namespace CbrConverter
                 //pbar_TotalProgress.Value = 0;
                 //pbar_ActualFile.Value = 0;
                 //lbl_ProcessingFile.Text =string.Empty;
-                listViewLog.Items.Add(new ListViewItem(new List<string>{ (listViewLog.Items.Count + 1).ToString(), e}.ToArray()));
+                var item = new ListViewItem(new List<string>{ (listViewLog.Items.Count + 1).ToString(), e}.ToArray());
+                item.ToolTipText = e;
+                listViewLog.Items.Add(item);
+                item.EnsureVisible();
                 //this.textBoxLog.Text += e + Environment.NewLine;
-                ShowLog();
+                ResizeLogColumn();
             });
             //MessageBox.Show(e, "ERROR!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -121,10 +127,12 @@ namespace CbrConverter
             SelectFolderDlg.ShowEditBox = false;                     //editbox 
             SelectFolderDlg.ShowBothFilesAndFolders = true;          //show files and folders
             SelectFolderDlg.RootFolder = System.Environment.SpecialFolder.MyComputer; //start from computer
+            SelectFolderDlg.SelectedPath = _lastSourcePath;          //reopen where we were last
 
             DialogResult result = SelectFolderDlg.ShowDialog();
             if (result == DialogResult.OK)
             {
+                _lastSourcePath = SelectFolderDlg.SelectedPath;
                 DataAccess.Instance.g_WorkingDir = SelectFolderDlg.SelectedPath;
                 tbox_SourceFile.Text = SelectFolderDlg.SelectedPath;
 
@@ -183,86 +191,40 @@ namespace CbrConverter
         }
 
 
-        private int LogTopPosition
+        /// <summary>
+        /// Widen the message column to fit the longest message (the list scrolls sideways if needed),
+        /// but never narrower than the visible area.
+        /// </summary>
+        private void ResizeLogColumn()
         {
-            get
+            listViewLog.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
+            int available = listViewLog.ClientSize.Width - columnHeaderNb.Width;
+            if (columnHeaderInfo.Width < available)
+                columnHeaderInfo.Width = available;
+        }
+
+        private void listViewLog_Resize(object sender, EventArgs e)
+        {
+            ResizeLogColumn();
+        }
+
+        /// <summary>
+        /// Ctrl+C copies the selected log messages, Ctrl+A selects them all
+        /// </summary>
+        private void listViewLog_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.A)
             {
-                Rectangle screenRectangle = RectangleToScreen(this.ClientRectangle);
-                int titleHeight = screenRectangle.Top - this.Top;
-                return this.listViewLog.Top + titleHeight - 1;
+                foreach (ListViewItem item in listViewLog.Items)
+                    item.Selected = true;
+                e.Handled = true;
             }
-        }
-
-        private int LogBottomPosition
-        {
-            get
+            else if (e.Control && e.KeyCode == Keys.C && listViewLog.SelectedItems.Count > 0)
             {
-                Rectangle screenRectangle = RectangleToScreen(this.ClientRectangle);
-                int titleHeight = screenRectangle.Top - this.Top;
-                return this.listViewLog.Bottom + titleHeight + 10;
+                var lines = listViewLog.SelectedItems.Cast<ListViewItem>().Select(i => i.SubItems[1].Text);
+                Clipboard.SetText(string.Join(Environment.NewLine, lines));
+                e.Handled = true;
             }
-        }
-
-        private void btn_showlog_Click(object sender, EventArgs e)
-        {
-            ToggleLog();
-        }
-
-        private void ToggleLog()
-        {
-            if (this.Height >= this.LogBottomPosition)
-            {
-                HideLog();
-            }
-            else
-            {
-                ShowLog();
-            }
-        }
-
-        private void ShowLog()
-        {            
-            var timerSlide = new System.Windows.Forms.Timer();
-            timerSlide.Interval = 3;
-            timerSlide.Tick += delegate(object sender, EventArgs e)
-            {
-                var timer = (System.Windows.Forms.Timer)sender;
-                if (this.Height >= this.LogBottomPosition)
-                {
-                    timer.Enabled = false;
-                    this.Height = this.LogBottomPosition;
-                    this.btn_showlog.Image = global::CbrConverter.Properties.Resources.arrow_double_up;
-                }
-                else
-                {
-                    this.Height = this.Size.Height + 10;
-                }
-                    
-            };
-            timerSlide.Start();
-        }
-
-        private void HideLog()
-        {
-            // just a slide effect
-            var timerSlide = new System.Windows.Forms.Timer();
-            timerSlide.Interval = 3;
-            timerSlide.Tick += delegate(object sender, EventArgs e)
-            {
-                var timer = (System.Windows.Forms.Timer)sender;
-                if (this.Height <= this.LogTopPosition)
-                {
-                    timer.Enabled = false;
-                    this.Height = this.LogTopPosition;
-                    this.btn_showlog.Image = global::CbrConverter.Properties.Resources.arrow_double_down;
-                }
-                else
-                {
-                    this.Height = this.Height - 10;
-                }
-
-            };
-            timerSlide.Start();     
         }
 
         private void tbox_OuputFolder_Click(object sender, EventArgs e)
@@ -273,10 +235,12 @@ namespace CbrConverter
             SelectFolderDlg.ShowEditBox = false;                     //editbox 
             SelectFolderDlg.ShowBothFilesAndFolders = false;          //show files and folders
             SelectFolderDlg.RootFolder = System.Environment.SpecialFolder.MyComputer; //start from computer
+            SelectFolderDlg.SelectedPath = _lastOutputPath;          //reopen where we were last
 
             DialogResult result = SelectFolderDlg.ShowDialog();
             if (result == DialogResult.OK)
             {
+                _lastOutputPath = SelectFolderDlg.SelectedPath;
                 DataAccess.Instance.g_Output_dir = SelectFolderDlg.SelectedPath;
                 tbox_OuputFolder.Text = SelectFolderDlg.SelectedPath;
 
