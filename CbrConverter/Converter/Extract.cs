@@ -5,10 +5,11 @@ using System.Threading;
 
 using System.Drawing.Imaging;
 using System.Drawing;
-using Ionic.Zip;
+using System.IO.Compression;
 using System.ComponentModel;
 using SharpCompress.Archives;
 using SharpCompress.Common;
+using SharpCompress.Readers;
 
 namespace CbrConverter
 {
@@ -151,7 +152,7 @@ namespace CbrConverter
 
 
                 //inizio test
-                var archive = ArchiveFactory.Open(DataAccess.Instance.g_WorkingFile);
+                using var archive = ArchiveFactory.OpenArchive(DataAccess.Instance.g_WorkingFile, new ReaderOptions());
                 //calculating file for pregress bar
                 double CurOneStep = archive.Entries.Count();
                 int divider;
@@ -272,12 +273,9 @@ namespace CbrConverter
                 string savedfile = temporaryDir + ".cbz";
 
 
-                using (ZipFile zip = new ZipFile())
-                {
-                    zip.AddDirectory(temporaryDir);
-                    // zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G");
-                    zip.Save(savedfile);
-                }
+                if (File.Exists(savedfile))
+                    File.Delete(savedfile);
+                ZipFile.CreateFromDirectory(temporaryDir, savedfile);
 
                 //waiting the new sharpcompress release to fix it
                 /*  using (var archive = ZipArchive.Create())
