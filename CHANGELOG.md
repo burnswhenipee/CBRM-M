@@ -22,7 +22,7 @@ Now:
 - Picking a source no longer resets the conversion options; options that don't apply are greyed out instead
 - "Merge images from same Pdf page" is now unchecked by default
 - The "N images for M pages!" warning now also appears when the images were merged back into pages (it says "Merged into N images"), so sliced-up PDFs are always flagged
-- `.rar` and `.zip` files are treated as comics, like `.cbr` / `.cbz`
+- Only `.cbr`, `.cbz` and `.pdf` files are picked up; other files (including `.rar` and `.zip`, which the original also converted) are ignored
 - New, cleaner layout: Source / Output / Convert / Progress sections, a proper Start button, and the window can be dragged to any size
 - Drag a file or folder onto the window (or onto the .exe) to select it
 - Output is now "Same folder as source" or "Other folder", with a Browse button

@@ -162,7 +162,7 @@ namespace CbrConverter
             using (var dlg = new OpenFileDialog())
             {
                 dlg.Title = "Select a file to convert";
-                dlg.Filter = "Comics and PDFs (*.cbr;*.cbz;*.rar;*.zip;*.pdf)|*.cbr;*.cbz;*.rar;*.zip;*.pdf|All files (*.*)|*.*";
+                dlg.Filter = "Comics and PDFs (*.cbr;*.cbz;*.pdf)|*.cbr;*.cbz;*.pdf";
                 dlg.InitialDirectory = LastSourceFolder(); //reopen where we were last
                 if (File.Exists(_lastSourcePath))
                     dlg.FileName = Path.GetFileName(_lastSourcePath);
@@ -197,6 +197,13 @@ namespace CbrConverter
 
         private void SetSource(string path)
         {
+            string type = Path.GetExtension(path).ToLower();
+            if (File.Exists(path) && type != ".cbr" && type != ".cbz" && type != ".pdf")
+            {
+                LogWarning(null, path + " : not a CBR, CBZ or PDF file, so it can't be converted");
+                return;
+            }
+
             _lastSourcePath = path;
             DataAccess.Instance.g_WorkingDir = path;
             tbox_SourceFile.Text = path;
@@ -205,7 +212,7 @@ namespace CbrConverter
             // only enable the conversions that apply to the selection, but keep what the user ticked
             string ext = File.Exists(path) ? Path.GetExtension(path).ToLower() : string.Empty;
             bool isFolder = Directory.Exists(path);
-            bool isArchive = ext == ".cbr" || ext == ".cbz" || ext == ".rar" || ext == ".zip";
+            bool isArchive = ext == ".cbr" || ext == ".cbz";
             lbl_ComicTo.Enabled = chk_cbr2pdf.Enabled = chk_ComicToFolder.Enabled = isFolder || isArchive;
             lbl_PdfTo.Enabled = chk_pdf2cbr.Enabled = chk_PdfToFolder.Enabled = isFolder || ext == ".pdf";
             UpdateMergeOption();

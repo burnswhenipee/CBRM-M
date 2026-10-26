@@ -96,7 +96,7 @@ namespace CbrConverter
         private static bool IsComic(string file)
         {
             string ext = Path.GetExtension(file).ToLower();
-            return ext == ".cbr" || ext == ".rar" || ext == ".cbz" || ext == ".zip";
+            return ext == ".cbr" || ext == ".cbz";
         }
 
         private static bool IsPdf(string file)
