@@ -17,7 +17,6 @@ namespace CbrConverter
         private static bool _processing;
         private static double _curProgress;
         private static double _totProgress;
-        private static bool _ReduceSize;
 
         public string g_Output_dir
         {
@@ -91,17 +90,6 @@ namespace CbrConverter
             }
         }
 
-        public bool g_ReduceSize
-        {
-            get
-            {
-                return _ReduceSize;
-            }
-            set
-            {
-                _ReduceSize = value;
-            }
-        }
 
         public int g_FileIndex { get; set; } //number of the file being converted, starting at 1
         public int g_FileCount { get; set; } //number of files to convert

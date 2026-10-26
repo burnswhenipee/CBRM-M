@@ -43,11 +43,14 @@
             this.tbox_OutputFolder = new System.Windows.Forms.TextBox();
             this.btn_SelectOutput = new System.Windows.Forms.Button();
             this.lbl_ConvertHeading = new System.Windows.Forms.Label();
-            this.layoutOptions = new System.Windows.Forms.FlowLayoutPanel();
+            this.layoutOptions = new System.Windows.Forms.TableLayoutPanel();
+            this.lbl_ComicTo = new System.Windows.Forms.Label();
+            this.chk_ComicToFolder = new System.Windows.Forms.CheckBox();
+            this.lbl_PdfTo = new System.Windows.Forms.Label();
+            this.chk_PdfToFolder = new System.Windows.Forms.CheckBox();
             this.chk_cbr2pdf = new System.Windows.Forms.CheckBox();
             this.chk_pdf2cbr = new System.Windows.Forms.CheckBox();
             this.chk_JoinImages = new System.Windows.Forms.CheckBox();
-            this.chk_ReduceSize = new System.Windows.Forms.CheckBox();
             this.lbl_ProgressHeading = new System.Windows.Forms.Label();
             this.layoutProgress = new System.Windows.Forms.TableLayoutPanel();
             this.lbl_ProcessingFile = new System.Windows.Forms.Label();
@@ -60,9 +63,7 @@
             this.btn_StartStop = new System.Windows.Forms.Button();
             this.layoutLogHeader = new System.Windows.Forms.TableLayoutPanel();
             this.lbl_LogHeading = new System.Windows.Forms.Label();
-            this.btn_CopyLog = new System.Windows.Forms.Button();
             this.btn_ClearLog = new System.Windows.Forms.Button();
-            this.btn_SaveLog = new System.Windows.Forms.Button();
             this.listViewLog = new System.Windows.Forms.ListView();
             this.columnHeaderTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -174,7 +175,7 @@
             this.lbl_SourceHint.ForeColor = System.Drawing.SystemColors.GrayText;
             this.lbl_SourceHint.Margin = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.lbl_SourceHint.Name = "lbl_SourceHint";
-            this.lbl_SourceHint.Text = "You can also drag a file or folder onto this window. Subfolders are converted too.";
+            this.lbl_SourceHint.Text = "You can also drag a file or folder onto this window. Subfolders are not included.";
             //
             // lbl_OutputHeading
             //
@@ -256,61 +257,97 @@
             this.lbl_ConvertHeading.Margin = new System.Windows.Forms.Padding(0, 10, 0, 0);
             this.lbl_ConvertHeading.Name = "lbl_ConvertHeading";
             this.lbl_ConvertHeading.Text = "Convert";
-            //
+            // 
             // layoutOptions
             //
             this.layoutOptions.AutoSize = true;
-            this.layoutOptions.Controls.Add(this.chk_cbr2pdf);
-            this.layoutOptions.Controls.Add(this.chk_pdf2cbr);
-            this.layoutOptions.Controls.Add(this.chk_JoinImages);
-            this.layoutOptions.Controls.Add(this.chk_ReduceSize);
+            this.layoutOptions.ColumnCount = 3;
+            this.layoutOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutOptions.Controls.Add(this.lbl_ComicTo, 0, 0);
+            this.layoutOptions.Controls.Add(this.chk_cbr2pdf, 1, 0);
+            this.layoutOptions.Controls.Add(this.chk_ComicToFolder, 2, 0);
+            this.layoutOptions.Controls.Add(this.lbl_PdfTo, 0, 1);
+            this.layoutOptions.Controls.Add(this.chk_pdf2cbr, 1, 1);
+            this.layoutOptions.Controls.Add(this.chk_PdfToFolder, 2, 1);
+            this.layoutOptions.Controls.Add(this.chk_JoinImages, 1, 2);
+            this.layoutOptions.SetColumnSpan(this.chk_JoinImages, 2);
             this.layoutOptions.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.layoutOptions.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.layoutOptions.Margin = new System.Windows.Forms.Padding(0);
             this.layoutOptions.Name = "layoutOptions";
+            this.layoutOptions.RowCount = 3;
+            this.layoutOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.layoutOptions.TabIndex = 3;
-            this.layoutOptions.WrapContents = false;
+            //
+            // lbl_ComicTo
+            //
+            this.lbl_ComicTo.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lbl_ComicTo.AutoSize = true;
+            this.lbl_ComicTo.Margin = new System.Windows.Forms.Padding(0, 3, 16, 0);
+            this.lbl_ComicTo.Name = "lbl_ComicTo";
+            this.lbl_ComicTo.Text = "CBR / CBZ  →";
             //
             // chk_cbr2pdf
             //
             this.chk_cbr2pdf.AutoSize = true;
             this.chk_cbr2pdf.Checked = true;
             this.chk_cbr2pdf.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_cbr2pdf.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
+            this.chk_cbr2pdf.Margin = new System.Windows.Forms.Padding(0, 3, 16, 0);
             this.chk_cbr2pdf.Name = "chk_cbr2pdf";
             this.chk_cbr2pdf.TabIndex = 0;
-            this.chk_cbr2pdf.Text = "CBR / CBZ  →  PDF";
+            this.chk_cbr2pdf.Text = "PDF";
             this.chk_cbr2pdf.UseVisualStyleBackColor = true;
+            //
+            // chk_ComicToFolder
+            //
+            this.chk_ComicToFolder.AutoSize = true;
+            this.chk_ComicToFolder.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
+            this.chk_ComicToFolder.Name = "chk_ComicToFolder";
+            this.chk_ComicToFolder.TabIndex = 1;
+            this.chk_ComicToFolder.Text = "Image folder";
+            this.chk_ComicToFolder.UseVisualStyleBackColor = true;
+            //
+            // lbl_PdfTo
+            //
+            this.lbl_PdfTo.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lbl_PdfTo.AutoSize = true;
+            this.lbl_PdfTo.Margin = new System.Windows.Forms.Padding(0, 3, 16, 0);
+            this.lbl_PdfTo.Name = "lbl_PdfTo";
+            this.lbl_PdfTo.Text = "PDF  →";
             //
             // chk_pdf2cbr
             //
             this.chk_pdf2cbr.AutoSize = true;
             this.chk_pdf2cbr.Checked = true;
             this.chk_pdf2cbr.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_pdf2cbr.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
+            this.chk_pdf2cbr.Margin = new System.Windows.Forms.Padding(0, 3, 16, 0);
             this.chk_pdf2cbr.Name = "chk_pdf2cbr";
-            this.chk_pdf2cbr.TabIndex = 1;
-            this.chk_pdf2cbr.Text = "PDF  →  CBZ";
+            this.chk_pdf2cbr.TabIndex = 2;
+            this.chk_pdf2cbr.Text = "CBZ";
             this.chk_pdf2cbr.UseVisualStyleBackColor = true;
-            this.chk_pdf2cbr.CheckedChanged += new System.EventHandler(this.chk_pdf2cbr_CheckedChanged);
+            this.chk_pdf2cbr.CheckedChanged += new System.EventHandler(this.chk_PdfOutput_CheckedChanged);
+            //
+            // chk_PdfToFolder
+            //
+            this.chk_PdfToFolder.AutoSize = true;
+            this.chk_PdfToFolder.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
+            this.chk_PdfToFolder.Name = "chk_PdfToFolder";
+            this.chk_PdfToFolder.TabIndex = 3;
+            this.chk_PdfToFolder.Text = "Image folder";
+            this.chk_PdfToFolder.UseVisualStyleBackColor = true;
+            this.chk_PdfToFolder.CheckedChanged += new System.EventHandler(this.chk_PdfOutput_CheckedChanged);
             //
             // chk_JoinImages
             //
             this.chk_JoinImages.AutoSize = true;
-            this.chk_JoinImages.Margin = new System.Windows.Forms.Padding(22, 3, 0, 0);
+            this.chk_JoinImages.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
             this.chk_JoinImages.Name = "chk_JoinImages";
-            this.chk_JoinImages.TabIndex = 2;
+            this.chk_JoinImages.TabIndex = 4;
             this.chk_JoinImages.Text = "Merge sliced images back into whole pages";
             this.chk_JoinImages.UseVisualStyleBackColor = true;
-            //
-            // chk_ReduceSize
-            //
-            this.chk_ReduceSize.AutoSize = true;
-            this.chk_ReduceSize.Margin = new System.Windows.Forms.Padding(0, 3, 0, 0);
-            this.chk_ReduceSize.Name = "chk_ReduceSize";
-            this.chk_ReduceSize.TabIndex = 3;
-            this.chk_ReduceSize.Text = "Compress images to reduce file size";
-            this.chk_ReduceSize.UseVisualStyleBackColor = true;
             //
             // lbl_ProgressHeading
             //
@@ -424,15 +461,11 @@
             // layoutLogHeader
             //
             this.layoutLogHeader.AutoSize = true;
-            this.layoutLogHeader.ColumnCount = 4;
+            this.layoutLogHeader.ColumnCount = 2;
             this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.layoutLogHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.layoutLogHeader.Controls.Add(this.lbl_LogHeading, 0, 0);
-            this.layoutLogHeader.Controls.Add(this.btn_CopyLog, 1, 0);
-            this.layoutLogHeader.Controls.Add(this.btn_ClearLog, 2, 0);
-            this.layoutLogHeader.Controls.Add(this.btn_SaveLog, 3, 0);
+            this.layoutLogHeader.Controls.Add(this.btn_ClearLog, 1, 0);
             this.layoutLogHeader.Dock = System.Windows.Forms.DockStyle.Fill;
             this.layoutLogHeader.Margin = new System.Windows.Forms.Padding(0, 10, 0, 3);
             this.layoutLogHeader.Name = "layoutLogHeader";
@@ -449,35 +482,16 @@
             this.lbl_LogHeading.Name = "lbl_LogHeading";
             this.lbl_LogHeading.Text = "Warnings and errors";
             //
-            // btn_CopyLog
-            //
-            this.btn_CopyLog.AutoSize = true;
-            this.btn_CopyLog.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.btn_CopyLog.Name = "btn_CopyLog";
-            this.btn_CopyLog.TabIndex = 0;
-            this.btn_CopyLog.Text = "Copy";
-            this.btn_CopyLog.UseVisualStyleBackColor = true;
-            this.btn_CopyLog.Click += new System.EventHandler(this.btn_CopyLog_Click);
-            //
             // btn_ClearLog
             //
             this.btn_ClearLog.AutoSize = true;
             this.btn_ClearLog.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
             this.btn_ClearLog.Name = "btn_ClearLog";
-            this.btn_ClearLog.TabIndex = 1;
+            this.btn_ClearLog.MinimumSize = new System.Drawing.Size(80, 0);
+            this.btn_ClearLog.TabIndex = 0;
             this.btn_ClearLog.Text = "Clear";
             this.btn_ClearLog.UseVisualStyleBackColor = true;
             this.btn_ClearLog.Click += new System.EventHandler(this.btn_ClearLog_Click);
-            //
-            // btn_SaveLog
-            //
-            this.btn_SaveLog.AutoSize = true;
-            this.btn_SaveLog.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.btn_SaveLog.Name = "btn_SaveLog";
-            this.btn_SaveLog.TabIndex = 2;
-            this.btn_SaveLog.Text = "Save...";
-            this.btn_SaveLog.UseVisualStyleBackColor = true;
-            this.btn_SaveLog.Click += new System.EventHandler(this.btn_SaveLog_Click);
             //
             // listViewLog
             //
@@ -489,10 +503,14 @@
             this.listViewLog.FullRowSelect = true;
             this.listViewLog.Margin = new System.Windows.Forms.Padding(0);
             this.listViewLog.Name = "listViewLog";
+            this.listViewLog.OwnerDraw = true;
             this.listViewLog.ShowItemToolTips = true;
             this.listViewLog.TabIndex = 7;
             this.listViewLog.UseCompatibleStateImageBehavior = false;
             this.listViewLog.View = System.Windows.Forms.View.Details;
+            this.listViewLog.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listViewLog_DrawColumnHeader);
+            this.listViewLog.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listViewLog_DrawItem);
+            this.listViewLog.DrawSubItem += new System.Windows.Forms.DrawListViewSubItemEventHandler(this.listViewLog_DrawSubItem);
             this.listViewLog.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewLog_KeyDown);
             this.listViewLog.Resize += new System.EventHandler(this.listViewLog_Resize);
             //
@@ -557,11 +575,14 @@
         private System.Windows.Forms.TextBox tbox_OutputFolder;
         private System.Windows.Forms.Button btn_SelectOutput;
         private System.Windows.Forms.Label lbl_ConvertHeading;
-        private System.Windows.Forms.FlowLayoutPanel layoutOptions;
+        private System.Windows.Forms.TableLayoutPanel layoutOptions;
+        private System.Windows.Forms.Label lbl_ComicTo;
+        private System.Windows.Forms.CheckBox chk_ComicToFolder;
+        private System.Windows.Forms.Label lbl_PdfTo;
+        private System.Windows.Forms.CheckBox chk_PdfToFolder;
         private System.Windows.Forms.CheckBox chk_cbr2pdf;
         private System.Windows.Forms.CheckBox chk_pdf2cbr;
         private System.Windows.Forms.CheckBox chk_JoinImages;
-        private System.Windows.Forms.CheckBox chk_ReduceSize;
         private System.Windows.Forms.Label lbl_ProgressHeading;
         private System.Windows.Forms.TableLayoutPanel layoutProgress;
         private System.Windows.Forms.Label lbl_ProcessingFile;
@@ -574,9 +595,7 @@
         private System.Windows.Forms.Button btn_StartStop;
         private System.Windows.Forms.TableLayoutPanel layoutLogHeader;
         private System.Windows.Forms.Label lbl_LogHeading;
-        private System.Windows.Forms.Button btn_CopyLog;
         private System.Windows.Forms.Button btn_ClearLog;
-        private System.Windows.Forms.Button btn_SaveLog;
         private System.Windows.Forms.ListView listViewLog;
         private System.Windows.Forms.ColumnHeader columnHeaderTime;
         private System.Windows.Forms.ColumnHeader columnHeaderType;

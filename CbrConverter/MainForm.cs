@@ -50,11 +50,14 @@ namespace CbrConverter
                 return;
             }
 
-            bool cbr2pdf = chk_cbr2pdf.Checked && chk_cbr2pdf.Enabled;
-            bool pdf2cbr = chk_pdf2cbr.Checked && chk_pdf2cbr.Enabled;
+            // only what is both ticked and applicable to the source
+            bool comicToPdf = chk_cbr2pdf.Checked && chk_cbr2pdf.Enabled;
+            bool comicToFolder = chk_ComicToFolder.Checked && chk_ComicToFolder.Enabled;
+            bool pdfToCbz = chk_pdf2cbr.Checked && chk_pdf2cbr.Enabled;
+            bool pdfToFolder = chk_PdfToFolder.Checked && chk_PdfToFolder.Enabled;
             if (!_fileSelected)
                 return;
-            if (!cbr2pdf && !pdf2cbr)
+            if (!comicToPdf && !comicToFolder && !pdfToCbz && !pdfToFolder)
             {
                 MessageBox.Show(this, "Tick at least one conversion to run.", "CBR Converter", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -65,9 +68,7 @@ namespace CbrConverter
                 return;
             }
 
-            DataAccess.Instance.g_Output_dir = rb_SameFolder.Checked
-                ? Path.GetDirectoryName(DataAccess.Instance.g_WorkingDir)
-                : _lastOutputPath;
+            DataAccess.Instance.g_Output_dir = rb_SameFolder.Checked ? SourceFolder() : _lastOutputPath;
 
             DataAccess.Instance.g_curProgress = 0;
             DataAccess.Instance.g_totProgress = 0;
@@ -75,11 +76,10 @@ namespace CbrConverter
             pbar_TotalProgress.Value = 0;
 
             SetRunning(true);
-            DataAccess.Instance.g_ReduceSize = chk_ReduceSize.Checked;
             DataAccess.Instance.g_Processing = true;
             Extract ex = new Extract();
             this.Subscribe(ex);
-            ex.BeginExtraction(cbr2pdf, pdf2cbr, chk_ReduceSize.Checked, false, chk_JoinImages.Checked, true);
+            ex.BeginExtraction(comicToPdf, comicToFolder, pdfToCbz, pdfToFolder, chk_JoinImages.Checked);
         }
 
         /// <summary>
@@ -116,6 +116,9 @@ namespace CbrConverter
                 if (DataAccess.Instance.g_curProgress > 100)
                     DataAccess.Instance.g_curProgress = 100;
                 pbar_ActualFile.Value = (int)DataAccess.Instance.g_curProgress;
+                int count = DataAccess.Instance.g_FileCount;
+                if (count > 0 && DataAccess.Instance.g_FileIndex > 0)
+                    pbar_TotalProgress.Value = (int)Math.Min(100, ((DataAccess.Instance.g_FileIndex - 1) * 100 + DataAccess.Instance.g_curProgress) / count);
             });
         }
 
@@ -203,9 +206,9 @@ namespace CbrConverter
             string ext = File.Exists(path) ? Path.GetExtension(path).ToLower() : string.Empty;
             bool isFolder = Directory.Exists(path);
             bool isArchive = ext == ".cbr" || ext == ".cbz" || ext == ".rar" || ext == ".zip";
-            chk_cbr2pdf.Enabled = isFolder || isArchive;
-            chk_pdf2cbr.Enabled = isFolder || ext == ".pdf";
-            chk_JoinImages.Enabled = chk_pdf2cbr.Enabled && chk_pdf2cbr.Checked;
+            lbl_ComicTo.Enabled = chk_cbr2pdf.Enabled = chk_ComicToFolder.Enabled = isFolder || isArchive;
+            lbl_PdfTo.Enabled = chk_pdf2cbr.Enabled = chk_PdfToFolder.Enabled = isFolder || ext == ".pdf";
+            UpdateMergeOption();
 
             _fileSelected = true;
             btn_StartStop.Enabled = true;
@@ -240,16 +243,32 @@ namespace CbrConverter
         private void UpdateOutputDisplay()
         {
             if (rb_SameFolder.Checked)
-                tbox_OutputFolder.Text = _fileSelected ? Path.GetDirectoryName(DataAccess.Instance.g_WorkingDir) : string.Empty;
+                tbox_OutputFolder.Text = _fileSelected ? SourceFolder() : string.Empty;
             else
                 tbox_OutputFolder.Text = _lastOutputPath;
             tbox_OutputFolder.SelectionStart = tbox_OutputFolder.Text.Length;
         }
 
-        private void chk_pdf2cbr_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// The selected folder, or the folder of the selected file
+        /// </summary>
+        private string SourceFolder()
         {
-            // merging only applies to PDF -> CBZ
-            chk_JoinImages.Enabled = chk_pdf2cbr.Enabled && chk_pdf2cbr.Checked;
+            string source = DataAccess.Instance.g_WorkingDir;
+            return Directory.Exists(source) ? source : Path.GetDirectoryName(source);
+        }
+
+        private void chk_PdfOutput_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateMergeOption();
+        }
+
+        /// <summary>
+        /// Merging only applies when converting PDFs
+        /// </summary>
+        private void UpdateMergeOption()
+        {
+            chk_JoinImages.Enabled = chk_pdf2cbr.Enabled && (chk_pdf2cbr.Checked || chk_PdfToFolder.Checked);
         }
 
         #endregion
@@ -329,6 +348,27 @@ namespace CbrConverter
                 columnHeaderInfo.Width = available;
         }
 
+        private void listViewLog_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            e.Graphics.FillRectangle(SystemBrushes.Window, e.Bounds);
+            var textBounds = new Rectangle(e.Bounds.X + 6, e.Bounds.Y, e.Bounds.Width - 6, e.Bounds.Height - 1);
+            TextRenderer.DrawText(e.Graphics, e.Header.Text, listViewLog.Font, textBounds, SystemColors.ControlText,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
+            // separator between columns and a line under the whole header
+            e.Graphics.DrawLine(SystemPens.ControlLight, e.Bounds.Right - 1, e.Bounds.Top + 4, e.Bounds.Right - 1, e.Bounds.Bottom - 5);
+            e.Graphics.DrawLine(SystemPens.ControlDark, e.Bounds.Left, e.Bounds.Bottom - 1, e.Bounds.Right, e.Bounds.Bottom - 1);
+        }
+
+        private void listViewLog_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private void listViewLog_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
         private void listViewLog_Resize(object sender, EventArgs e)
         {
             ResizeLogColumn();
@@ -357,35 +397,10 @@ namespace CbrConverter
             }
         }
 
-        /// <summary>
-        /// Copy the selected entries, or the whole log if nothing is selected
-        /// </summary>
-        private void btn_CopyLog_Click(object sender, EventArgs e)
-        {
-            var items = listViewLog.SelectedItems.Count > 0
-                ? listViewLog.SelectedItems.Cast<ListViewItem>()
-                : listViewLog.Items.Cast<ListViewItem>();
-            string text = LogText(items);
-            if (text.Length > 0)
-                Clipboard.SetText(text);
-        }
-
         private void btn_ClearLog_Click(object sender, EventArgs e)
         {
             listViewLog.Items.Clear();
             ResizeLogColumn();
-        }
-
-        private void btn_SaveLog_Click(object sender, EventArgs e)
-        {
-            using (var dlg = new SaveFileDialog())
-            {
-                dlg.Title = "Save log";
-                dlg.Filter = "Text files (*.txt)|*.txt";
-                dlg.FileName = "CbrConverter log " + DateTime.Now.ToString("yyyy-MM-dd HHmm") + ".txt";
-                if (dlg.ShowDialog(this) == DialogResult.OK)
-                    File.WriteAllText(dlg.FileName, LogText(listViewLog.Items.Cast<ListViewItem>()));
-            }
         }
 
         #endregion

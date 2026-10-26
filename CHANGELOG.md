@@ -26,9 +26,15 @@ Now:
 - New, cleaner layout: Source / Output / Convert / Progress sections, a proper Start button, and the window can be dragged to any size
 - Drag a file or folder onto the window (or onto the .exe) to select it
 - Output is now "Same folder as source" or "Other folder", with a Browse button
-- The confusing "P/Img" checkbox is gone; "Merge sliced images back into whole pages" now sits under "PDF → CBZ", which it belongs to
-- Progress shows "File 3 of 12", and the "Overall" bar counts only the files that will actually be converted (it used to count only PDFs)
-- The log shows only warnings and errors, with the time and type; warnings and errors are colour-coded; Copy, Clear and Save buttons
+- The confusing "P/Img" checkbox is gone; "Merge sliced images back into whole pages" now sits under the PDF options, which it belongs to
+- New outputs: CBR/CBZ → image folder and PDF → image folder (alongside CBR/CBZ → PDF and PDF → CBZ; several can be ticked at once)
+- Removed "Compress images to reduce file size": images are always kept at their original resolution and quality
+- Folders are no longer processed recursively: only the files directly inside the selected folder are converted
+- Fixed: pages in different subfolders of an archive (e.g. one folder per chapter) with the same file name overwrote each other, losing pages
+- Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out
+- Fixed: pressing Stop during CBR/CBZ → PDF left a half-written PDF behind
+- Progress shows "File 3 of 12"; the "Overall" bar moves steadily and counts only the files that will actually be converted (it used to count only PDFs)
+- The log shows only warnings and errors, with the time and type; warnings and errors are colour-coded; a line under the column headings; a Clear button
 - Fixed: one unreadable CBR/CBZ stopped a whole folder conversion; now it's logged and the next file is converted
 - Fixed: clicking the link in the About window crashed
 - Settings are locked while a conversion runs, so they can't be changed halfway through

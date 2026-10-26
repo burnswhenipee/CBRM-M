@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.IO;
-using System.Threading;
-
-using System.Drawing.Imaging;
-using System.Drawing;
-using System.IO.Compression;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
@@ -27,302 +24,254 @@ namespace CbrConverter
         public delegate void ErrorNotify(Extract m, string e);
         public event ErrorNotify evnt_WarningNotify;
         public EventArgs e = null;
-        double CurOneStep;
-        bool IsSingleFile; //to link the 2 progress bar
-        bool _Cbr2Pdf, _Pdf2Cbz, _ReduceSize, _JoinImages, _CheckImagesPages;
+        bool _ComicToPdf, _ComicToFolder, _PdfToCbz, _PdfToFolder, _JoinImages;
 
+        // image types that can be put in a PDF
+        static readonly string[] PdfImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff" };
+        // other image types that may be found in comics, reported when they can't be put in a PDF
+        static readonly string[] OtherImageExtensions = { ".webp", ".avif", ".jxl", ".heic", ".jp2" };
 
         /// <summary>
-        /// Start the extraction thread according to selected file or folder
+        /// Convert the selected file, or the files directly inside the selected folder (subfolders are not included)
         /// </summary>
-        public void BeginExtraction(bool cbr2pdf, bool pdf2cbz, bool reduceSize, bool deleteOriginal, bool joinImages, bool checkImagesPages)
+        public void BeginExtraction(bool comicToPdf, bool comicToFolder, bool pdfToCbz, bool pdfToFolder, bool joinImages)
         {
-            _Cbr2Pdf = cbr2pdf;
+            _ComicToPdf = comicToPdf;
+            _ComicToFolder = comicToFolder;
+            _PdfToCbz = pdfToCbz;
+            _PdfToFolder = pdfToFolder;
             _JoinImages = joinImages;
-            _CheckImagesPages = checkImagesPages;
-            _ReduceSize = reduceSize;
-            _Pdf2Cbz = pdf2cbz;
 
-            //checking if is a directory or a file
-            if (File.Exists(DataAccess.Instance.g_WorkingDir))
+            string source = DataAccess.Instance.g_WorkingDir;
+            List<string> files;
+            if (File.Exists(source))
+                files = new List<string> { source };
+            else
             {
-                DataAccess.Instance.g_WorkingFile = DataAccess.Instance.g_WorkingDir;
-                IsSingleFile = true;
-                DataAccess.Instance.g_FileIndex = 0;
-                DataAccess.Instance.g_FileCount = 1;
-                //it's a file so i start the single extraction thread
-                //check if cbr
-                string ext = Path.GetExtension(DataAccess.Instance.g_WorkingFile).ToLower();
-                if ((string.Compare(ext, ".zip") == 0 || string.Compare(ext, ".rar") == 0 || string.Compare(ext, ".cbr") == 0 || string.Compare(ext, ".cbz") == 0) && _Cbr2Pdf)
-                {
-
-                    DataAccess.Instance.g_FileIndex = 1;
-                    Thread extract = new Thread(ConvertCbrToPdf);
-                    extract.Start();
-                }
-                else if ((string.Compare(ext, ".pdf") == 0) && (_Pdf2Cbz))
-                {
-                    int nbFichiers = 1;
-                    //calculate the value for the progression bar
-                    double singval = (double)100 / nbFichiers;
-
-                    var bw = new BackgroundWorker();
-
-                    // define the event handlers
-                    bw.DoWork += (sender, args) =>
-                    {
-                        // do your lengthy stuff here -- this will happen in a separate thread
-                        ExtractMultipleFiles(DataAccess.Instance.g_WorkingDir, singval);
-                    };
-
-                    bw.RunWorkerCompleted += (sender, args) =>
-                    {
-                        //finished, update the ui
-                        DataAccess.Instance.g_Processing = false;
-                        DataAccess.Instance.g_totProgress = 0;
-                        DataAccess.Instance.g_curProgress = 0;
-                        DataAccess.Instance.g_WorkingFile = string.Empty;
-                        evnt_UpdateFileName(this, e);
-                        evnt_UpdatTotBar(this, e);
-                        evnt_UpdateCurBar();
-                    };
-
-                    bw.RunWorkerAsync(); // starts the background worker
-                }
-
+                files = Directory.GetFiles(source).Where(IsConvertible).OrderBy(f => f, StringComparer.CurrentCultureIgnoreCase).ToList();
+                if (files.Count == 0)
+                    evnt_WarningNotify(this, source + " : no files to convert in this folder");
             }
-            else //it's a directory
+
+            DataAccess.Instance.g_FileIndex = 0;
+            DataAccess.Instance.g_FileCount = files.Count;
+
+            var bw = new BackgroundWorker();
+            bw.DoWork += (sender, args) =>
             {
-                IsSingleFile = false;
-
-                int nbFichiers = CountFiles(DataAccess.Instance.g_WorkingDir);
-                DataAccess.Instance.g_FileIndex = 0;
-                DataAccess.Instance.g_FileCount = nbFichiers;
-                if (nbFichiers == 0)
-                    evnt_WarningNotify(this, DataAccess.Instance.g_WorkingDir + " : no files to convert in this folder");
-                //calculate the value for the progression bar
-                double singval = nbFichiers > 0 ? (double)100 / nbFichiers : 0;
-
-                //Thread ext = new Thread(() => ExtractMultipleFiles(DataAccess.Instance.g_WorkingDir, singval));
-                //ext.Start();
-                var bw = new BackgroundWorker();
-
-                // define the event handlers
-                bw.DoWork += (sender, args) =>
+                foreach (string file in files)
                 {
-                    // do your lengthy stuff here -- this will happen in a separate thread
-                    ExtractMultipleFiles(DataAccess.Instance.g_WorkingDir, singval);
-                };
+                    if (!DataAccess.Instance.g_Processing) //stop button pressed
+                        break;
 
-                bw.RunWorkerCompleted += (sender, args) =>
-                {
-                    //finished, update the ui
-                    DataAccess.Instance.g_Processing = false;
-                    DataAccess.Instance.g_totProgress = 0;
-                    DataAccess.Instance.g_curProgress = 0;
-                    DataAccess.Instance.g_WorkingFile = string.Empty;
+                    DataAccess.Instance.g_WorkingFile = file;
+                    DataAccess.Instance.g_FileIndex++;
+                    SetProgress(0);
                     evnt_UpdateFileName(this, e);
-                    evnt_UpdatTotBar(this, e);
-                    evnt_UpdateCurBar();
-                };
-
-                bw.RunWorkerAsync(); // starts the background worker
-            }
-        }
-
-        /// <summary>
-        /// Extract the file and call the Compress Image and the Generate PDF
-        /// </summary>
-        private void ConvertCbrToPdf()
-        {
-            try
-            {
-                //check if cbr
-                /*string ext = Path.GetExtension(DataAccess.Instance.g_WorkingFile);
-                if ((string.Compare(ext, ".cbr") != 0)&&(string.Compare(ext, ".cbz") != 0))
-                    return;*/
-
-                //write the name of the file on the UI
-                evnt_UpdateFileName(this, e);
-
-                //creating directory for extraction      
-                string tempFileName = Path.GetFileName(DataAccess.Instance.g_WorkingFile);
-                outputBase = DataAccess.Instance.g_WorkingFile;
-                outputBase = outputBase.Replace(tempFileName, Path.GetFileNameWithoutExtension(DataAccess.Instance.g_WorkingFile));
-
-                // replace with new output
-                var SourceFolder = DataAccess.Instance.g_WorkingDir.Replace(Path.GetFileName(DataAccess.Instance.g_WorkingDir), "");
-                outputBase = outputBase.Replace(SourceFolder, DataAccess.Instance.g_Output_dir + "\\");
-                Directory.CreateDirectory(Path.GetDirectoryName(outputBase));
-
-                temporaryDir = CreateWorkingDir();
-
-
-                //inizio test
-                using var archive = ArchiveFactory.OpenArchive(DataAccess.Instance.g_WorkingFile, new ReaderOptions());
-                //calculating file for pregress bar
-                double CurOneStep = archive.Entries.Count();
-                int divider;
-                if (_ReduceSize)
-                    divider = 33;
-                else
-                    divider = 50;
-                CurOneStep = divider / CurOneStep;
-
-                var options = new ExtractionOptions
-                {
-                    Overwrite = true,
-                    PreserveAttributes = false,
-                    PreserveFileTime = true
-                };
-
-                //extract the file into the folder
-                foreach (var entry in archive.Entries)
-                {
-                    if (!entry.IsDirectory)
+                    try
                     {
-                        if (DataAccess.Instance.g_Processing) //this is to stop the thread if stop button is pressed
-                        {
-
-                            string path = Path.Combine(temporaryDir, Path.GetFileName(entry.Key));
-                            //entry.WriteToDirectory(@"C:\temp", ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
-                            entry.WriteToFile(path, options);
-
-                            DataAccess.Instance.g_curProgress += CurOneStep;
-                            evnt_UpdateCurBar();
-
-                            if (IsSingleFile)
-                            {
-                                DataAccess.Instance.g_totProgress = DataAccess.Instance.g_curProgress;
-                                evnt_UpdatTotBar(this, e);
-                            }
-                        }
+                        ConvertFile(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        evnt_ErrorNotify(this, file + " : " + ex.Message);
                     }
                 }
-
-
-                if (DataAccess.Instance.g_Processing)
-                {
-                    if (DataAccess.Instance.g_ReduceSize)
-                        CompressImage();
-                    GeneratePdf();
-                }
-                //forcing garbage collector to clean to avoid lock file error caused by pdfsharp
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                //deleting temp dir
-                DeleteWorkingDir();
-
-                //update progress bar
-                DataAccess.Instance.g_curProgress = 0;
-                evnt_UpdateCurBar();
-
-                if (IsSingleFile)
-                {
-                    DataAccess.Instance.g_totProgress = DataAccess.Instance.g_curProgress;
-                    evnt_UpdatTotBar(this, e);
-                }
-
-                //if we are converting a single file and not a directory we are done, so i reset values and clean the UI
-                if (IsSingleFile)
-                {
-                    DataAccess.Instance.g_Processing = false;
-                    DataAccess.Instance.g_WorkingFile = string.Empty;
-                    evnt_UpdateFileName(this, e);
-                }
-            }
-            catch (Exception ex) //too lazy to catch specific exceptions, TODO in future!!
+            };
+            bw.RunWorkerCompleted += (sender, args) =>
             {
-                DeleteWorkingDir();
-                if (IsSingleFile)
+                //finished, update the ui
+                DataAccess.Instance.g_Processing = false;
+                DataAccess.Instance.g_totProgress = 0;
+                DataAccess.Instance.g_curProgress = 0;
+                DataAccess.Instance.g_WorkingFile = string.Empty;
+                DataAccess.Instance.g_FileIndex = 0;
+                evnt_UpdateFileName(this, e);
+                evnt_UpdatTotBar(this, e);
+                evnt_UpdateCurBar();
+            };
+            bw.RunWorkerAsync();
+        }
+
+        private static bool IsComic(string file)
+        {
+            string ext = Path.GetExtension(file).ToLower();
+            return ext == ".cbr" || ext == ".rar" || ext == ".cbz" || ext == ".zip";
+        }
+
+        private static bool IsPdf(string file)
+        {
+            return Path.GetExtension(file).ToLower() == ".pdf";
+        }
+
+        /// <summary>
+        /// True if the file is one of the types selected for conversion
+        /// </summary>
+        private bool IsConvertible(string file)
+        {
+            if (IsComic(file))
+                return _ComicToPdf || _ComicToFolder;
+            if (IsPdf(file))
+                return _PdfToCbz || _PdfToFolder;
+            return false;
+        }
+
+        /// <summary>
+        /// Unpack the file into a working folder, then write each selected output from it
+        /// </summary>
+        private void ConvertFile(string file)
+        {
+            outputBase = Path.Combine(DataAccess.Instance.g_Output_dir, Path.GetFileNameWithoutExtension(file));
+            Directory.CreateDirectory(DataAccess.Instance.g_Output_dir);
+            temporaryDir = CreateWorkingDir();
+            try
+            {
+                if (IsComic(file))
                 {
-                    DataAccess.Instance.g_Processing = false; //stopping the process
-                    DataAccess.Instance.g_WorkingFile = string.Empty;
-                    evnt_ErrorNotify(this, DataAccess.Instance.g_WorkingDir + " : " + ex.Message);
-                    evnt_UpdateFileName(this, e);
+                    ExtractArchive(file, 50);
+                    if (_ComicToPdf && DataAccess.Instance.g_Processing)
+                        GeneratePdf(_ComicToFolder ? 40 : 50);
+                    if (_ComicToFolder && DataAccess.Instance.g_Processing)
+                        CopyToImageFolder();
                 }
                 else
-                    throw; //reported by ExtractMultipleFiles, which goes on with the next file
+                {
+                    ExtractPdf(file, 80);
+                    if (_PdfToCbz && DataAccess.Instance.g_Processing)
+                        ZipFile.CreateFromDirectory(temporaryDir, GetAvailableOutputPath(".cbz"));
+                    if (_PdfToFolder && DataAccess.Instance.g_Processing)
+                        CopyToImageFolder();
+                }
+                if (DataAccess.Instance.g_Processing)
+                    SetProgress(100);
+            }
+            finally
+            {
+                DeleteWorkingDir();
             }
         }
 
         /// <summary>
-        /// Extract images from PDF and compress into a cbr archive
+        /// Extract every file of a CBR/CBZ into the working folder
         /// </summary>
-        private void ConvertPdfToCbr(string currentFile)
+        private void ExtractArchive(string file, double progressShare)
         {
-            evnt_UpdateFileName(this, e);
-            //creating directory for extraction      
-            string tempFileName = Path.GetFileName(currentFile);
-            outputBase = currentFile;
-            outputBase = outputBase.Replace(tempFileName, Path.GetFileNameWithoutExtension(currentFile));
+            using var archive = ArchiveFactory.OpenArchive(file, new ReaderOptions());
+            var entries = archive.Entries.Where(entry => !entry.IsDirectory).ToList();
 
-            // replace with new output
-            var SourceFolder = DataAccess.Instance.g_WorkingDir.Replace(Path.GetFileName(DataAccess.Instance.g_WorkingDir), "");
-            outputBase = outputBase.Replace(SourceFolder, DataAccess.Instance.g_Output_dir + "\\");
-            Directory.CreateDirectory(Path.GetDirectoryName(outputBase));
+            // pages can sit in subfolders (e.g. one per chapter): drop the folder they all share and
+            // fold the rest into the file name, so pages with the same name don't overwrite each other
+            var keys = entries.Select(entry => entry.Key.Replace('\\', '/')).ToList();
+            string commonDir = CommonDirectory(keys);
 
-            temporaryDir = CreateWorkingDir();
-
-
-            int divider;
-            if (_ReduceSize)
-                divider = 50;
-            else
-                divider = 80;
-
-
-            PdfExtractionResult result;
-            try
+            var options = new ExtractionOptions
             {
-                result = PdfFunctions.PDF_ExportImage(currentFile, temporaryDir, divider, _CheckImagesPages, _JoinImages);
-            }
-            catch
+                Overwrite = true,
+                PreserveAttributes = false,
+                PreserveFileTime = true
+            };
+
+            double step = entries.Count > 0 ? progressShare / entries.Count : 0;
+            for (int i = 0; i < entries.Count && DataAccess.Instance.g_Processing; i++)
             {
-                DeleteWorkingDir();
-                throw;
+                string name = keys[i].Substring(commonDir.Length).Replace('/', '_');
+                entries[i].WriteToFile(Path.Combine(temporaryDir, name), options);
+                SetProgress(DataAccess.Instance.g_curProgress + step);
             }
+        }
+
+        /// <summary>
+        /// Longest folder path ("a/b/") shared by all the keys
+        /// </summary>
+        private static string CommonDirectory(List<string> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+            string common = keys[0].Contains('/') ? keys[0].Substring(0, keys[0].LastIndexOf('/') + 1) : string.Empty;
+            foreach (string key in keys)
+                while (common.Length > 0 && !key.StartsWith(common, StringComparison.Ordinal))
+                    common = common.Substring(0, common.TrimEnd('/').LastIndexOf('/') + 1);
+            return common;
+        }
+
+        /// <summary>
+        /// Extract the images of a PDF into the working folder, warning about sliced pages
+        /// </summary>
+        private void ExtractPdf(string file, int progressShare)
+        {
+            var result = PdfFunctions.PDF_ExportImage(file, temporaryDir, progressShare, true, _JoinImages);
 
             // report sliced pages even when they were merged back together
             if (result.ImagesBeforeMerge != result.Pages)
             {
                 if (result.ImagesAfterMerge != result.ImagesBeforeMerge)
-                    evnt_WarningNotify(this, string.Format("{0} : {1} images for {2} pages! Merged into {3} images.", currentFile, result.ImagesBeforeMerge, result.Pages, result.ImagesAfterMerge));
+                    evnt_WarningNotify(this, string.Format("{0} : {1} images for {2} pages! Merged into {3} images.", file, result.ImagesBeforeMerge, result.Pages, result.ImagesAfterMerge));
                 else
-                    evnt_WarningNotify(this, string.Format("{0} : {1} images for {2} pages!", currentFile, result.ImagesBeforeMerge, result.Pages));
+                    evnt_WarningNotify(this, string.Format("{0} : {1} images for {2} pages!", file, result.ImagesBeforeMerge, result.Pages));
             }
+        }
 
-            if (DataAccess.Instance.g_Processing)
+        /// <summary>
+        /// Generate the pdf from the images, one page per image at its original size
+        /// </summary>
+        private void GeneratePdf(double progressShare)
+        {
+            var imageFiles = Directory.GetFiles(temporaryDir).ToList();
+            imageFiles.Sort();
+
+            foreach (string skipped in imageFiles.Where(f => OtherImageExtensions.Contains(Path.GetExtension(f).ToLower())))
+                evnt_WarningNotify(this, string.Format("{0} : {1} was left out of the PDF, this image type can't be put in a PDF", DataAccess.Instance.g_WorkingFile, Path.GetFileName(skipped)));
+            imageFiles = imageFiles.Where(f => PdfImageExtensions.Contains(Path.GetExtension(f).ToLower())).ToList();
+            if (imageFiles.Count == 0)
+                throw new Exception("no images found to put in the PDF");
+
+            string filename = GetAvailableOutputPath(".pdf");
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4);
+            var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, new FileStream(filename, FileMode.Create));
+            document.Open();
+
+            double step = progressShare / imageFiles.Count;
+            foreach (string imageFile in imageFiles)
             {
-                //compress files in a zip  
-                if (_ReduceSize)
-                    CompressImage();
-
-                string savedfile = GetAvailableOutputPath(".cbz");
-
-                ZipFile.CreateFromDirectory(temporaryDir, savedfile);
-
-                //waiting the new sharpcompress release to fix it
-                /*  using (var archive = ZipArchive.Create())
-                  {
-                      archive.AddAllFromDirectory(temporaryDir);                       
-                      archive.SaveTo(savedfile, CompressionType.None);    
-                  }*/
+                if (!DataAccess.Instance.g_Processing)
+                    break;
+                try
+                {
+                    var img = iTextSharp.text.Image.GetInstance(imageFile);
+                    document.SetPageSize(new iTextSharp.text.Rectangle(img.Width, img.Height));
+                    document.NewPage();
+                    img.SetAbsolutePosition(0, 0);
+                    writer.DirectContent.AddImage(img);
+                }
+                catch (Exception ex)
+                {
+                    evnt_ErrorNotify(this, DataAccess.Instance.g_WorkingFile + " : " + Path.GetFileName(imageFile) + " : " + ex.Message);
+                }
+                SetProgress(DataAccess.Instance.g_curProgress + step);
             }
 
+            document.Close();
 
-            //delete the temp dir
-            DeleteWorkingDir();
+            // stopped halfway: don't leave an incomplete PDF behind
+            if (!DataAccess.Instance.g_Processing)
+                File.Delete(filename);
+        }
 
+        /// <summary>
+        /// Copy the extracted images into a folder named after the source file
+        /// </summary>
+        private void CopyToImageFolder()
+        {
+            string folder = GetAvailableOutputPath(string.Empty);
+            Directory.CreateDirectory(folder);
+            foreach (string file in Directory.GetFiles(temporaryDir))
+                File.Copy(file, Path.Combine(folder, Path.GetFileName(file)));
+        }
 
-
-            //if we are converting a single file and not a directory we are done, so i reset values and clean the UI
-            if (IsSingleFile)
-            {
-                DataAccess.Instance.g_Processing = false;
-                DataAccess.Instance.g_WorkingFile = string.Empty;
-                evnt_UpdateFileName(this, e);
-            }
+        private void SetProgress(double value)
+        {
+            DataAccess.Instance.g_curProgress = Math.Min(value, 100);
+            evnt_UpdateCurBar();
         }
 
         /// <summary>
@@ -349,12 +298,13 @@ namespace CbrConverter
         }
 
         /// <summary>
-        /// Output path for the current file; if it already exists, add " (1)", " (2)"... instead of overwriting
+        /// Output path for the current file (a folder when the extension is empty); if it already exists,
+        /// add " (1)", " (2)"... instead of overwriting
         /// </summary>
         private string GetAvailableOutputPath(string extension)
         {
             string path = outputBase + extension;
-            if (!File.Exists(path))
+            if (!File.Exists(path) && !Directory.Exists(path))
                 return path;
 
             int i = 1;
@@ -362,250 +312,10 @@ namespace CbrConverter
             do
             {
                 candidate = string.Format("{0} ({1}){2}", outputBase, i++, extension);
-            } while (File.Exists(candidate));
+            } while (File.Exists(candidate) || Directory.Exists(candidate));
 
             evnt_WarningNotify(this, string.Format("{0} already exists, renaming to {1}", path, Path.GetFileName(candidate)));
             return candidate;
-        }
-
-        private int CountFiles(string dir)
-        {
-            return Directory.GetFiles(dir, "*", SearchOption.AllDirectories).Count(IsConvertible);
-        }
-
-        /// <summary>
-        /// True if the file is one of the types selected for conversion
-        /// </summary>
-        private bool IsConvertible(string file)
-        {
-            string ext = Path.GetExtension(file).ToLower();
-            if (ext == ".cbr" || ext == ".rar" || ext == ".cbz" || ext == ".zip")
-                return _Cbr2Pdf;
-            if (ext == ".pdf")
-                return _Pdf2Cbz;
-            return false;
-        }
-
-        /// <summary>
-        /// when a directory is selected this method  is launched, it just read all the files inside the directory and call ExtractSingleFile()
-        /// </summary>
-        private void ExtractMultipleFiles(string currentDir, double singval)
-        {
-            string[] files = { currentDir };
-
-            if ((File.GetAttributes(currentDir) & FileAttributes.Directory) == FileAttributes.Directory)
-            {
-                files = Directory.GetFiles(currentDir);
-                string[] directories = Directory.GetDirectories(currentDir);
-                //int count = files.Count();
-
-                foreach (string dir in directories)
-                {
-                    ExtractMultipleFiles(dir, singval);
-                }
-            }
-
-            //call the ExtractSingleFile for each file
-            foreach (string file in files)
-            {
-                if (DataAccess.Instance.g_Processing && IsConvertible(file)) //this is to stop the thread if stop button is pressed
-                {
-                    DataAccess.Instance.g_WorkingFile = file;
-                    DataAccess.Instance.g_FileIndex++;
-                    try
-                    {
-                        string ext = Path.GetExtension(DataAccess.Instance.g_WorkingFile).ToLower();
-                        if (((string.Compare(ext, ".cbr") == 0) || (string.Compare(ext, ".rar") == 0) || (string.Compare(ext, ".cbz") == 0) || (string.Compare(ext, ".zip") == 0)) && (_Cbr2Pdf))
-                        {
-                            ConvertCbrToPdf();
-                        }
-                        else if ((string.Compare(ext, ".pdf") == 0)  && (_Pdf2Cbz))
-                        {
-                            ConvertPdfToCbr(file);
-                        }
-                    }
-                    catch (Exception a)
-                    {
-                        evnt_ErrorNotify(this, file + " : " + a.Message.ToString());
-                    }
-
-                    //updating the total progression bar
-                    DataAccess.Instance.g_totProgress += singval;
-                    evnt_UpdatTotBar(this, e);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Generate the pdf from the images
-        /// </summary>
-        private void GeneratePdf()
-        {
-            // Create a new PDF document
-            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4);
-
-            string filename = GetAvailableOutputPath(".pdf");
-            var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, new FileStream(filename, FileMode.Create));
-            document.Open();
-
-            var imageFiles = Directory.GetFiles(temporaryDir).ToList();
-            imageFiles.Sort();
-
-            //count for progression bar
-            CurOneStep = imageFiles.Count();
-            int divider;
-            if (DataAccess.Instance.g_ReduceSize)
-                divider = 33;
-            else
-                divider = 50;
-            CurOneStep = divider / CurOneStep;
-
-
-            //importing the images in the pdf
-            foreach (string imageFile in imageFiles)
-            {
-                if (DataAccess.Instance.g_Processing)
-                {
-                    try
-                    {
-                        //updating progress bar
-                        DataAccess.Instance.g_curProgress += CurOneStep;
-                        evnt_UpdateCurBar();
-
-                        if (IsSingleFile)
-                        {
-                            DataAccess.Instance.g_totProgress = DataAccess.Instance.g_curProgress;
-                            evnt_UpdatTotBar(this, e);
-                        }
-
-                        //checking file extension
-                        string ext = Path.GetExtension(imageFile).ToLower();
-                        if ((string.Compare(ext, ".tif") == 0) || (string.Compare(ext, ".jpg") == 0) || (string.Compare(ext, ".jpeg") == 0) || (string.Compare(ext, ".png") == 0) || (string.Compare(ext, ".bmp") == 0) || (string.Compare(ext, ".new") == 0))
-                        {
-                            //var size = iTextSharp.text.PageSize.A4;                                                    
-                            var img = iTextSharp.text.Image.GetInstance(imageFile);
-                            //img.ScaleToFit(iTextSharp.text.PageSize.A4.Width, iTextSharp.text.PageSize.A4.Height);
-                            document.SetPageSize(new iTextSharp.text.Rectangle(img.Width, img.Height));
-                            // Create an empty page
-                            document.NewPage();
-                            img.SetAbsolutePosition(0, 0);
-                            writer.DirectContent.AddImage(img);
-                            
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        evnt_ErrorNotify(this, imageFile + " : " + e.Message.ToString());
-                    }
-                }
-
-            }
-
-
-            //saving file
-            document.Close();
-        }
-
-        /// <summary>
-        /// Compress the image and reduce the quality
-        /// </summary>
-        private void CompressImage()
-        {
-            int NEW_IMG_QUALITY = 40; //i found that 30 is not too bad and the filesize is about the half
-
-            string[] imageFiles = Directory.GetFiles(temporaryDir);
-
-            //count for progress bar
-            CurOneStep = imageFiles.Count();
-            int divider;
-            if (DataAccess.Instance.g_ReduceSize)
-                divider = 33;
-            else
-                divider = 50;
-            CurOneStep = divider / CurOneStep;
-
-            //compress every image
-            foreach (string imageFile in imageFiles)
-            {
-                if (DataAccess.Instance.g_Processing) //this is to stop the thread if the user press the stop button
-                {
-
-                    string NewImg;
-                    //checking file extension
-                    string ext = Path.GetExtension(imageFile);
-                    if ((string.Compare(ext, ".jpg") != 0) && (string.Compare(ext, ".jpeg") != 0) && (string.Compare(ext, ".bmp") != 0)
-                        && (string.Compare(ext, ".JPG") != 0) && (string.Compare(ext, ".JPEG") != 0) && (string.Compare(ext, ".BMP") != 0))
-                        break;
-
-                    //compressing
-                    using (Image OldImg = Image.FromFile(imageFile))
-                    {
-                        NewImg = imageFile + ".new";
-                        SaveJpeg(NewImg, OldImg, NEW_IMG_QUALITY);
-                    }
-
-                    //updating progress bar
-                    DataAccess.Instance.g_curProgress += CurOneStep;
-                    evnt_UpdateCurBar();
-
-                    if (IsSingleFile)
-                    {
-                        DataAccess.Instance.g_totProgress = DataAccess.Instance.g_curProgress;
-                        evnt_UpdatTotBar(this, e);
-                    }
-
-                    //delete the old image
-                    File.Delete(imageFile);
-
-                    //remove the .new
-                    File.Move(NewImg, imageFile);
-                }
-            }
-
-        }
-
-        /// <summary>
-        /// Saves an image as a jpeg image, with the given quality
-        /// </summary>
-        /// <param name="path">Path to which the image would be saved.</param>
-        /// <param name="quality">An integer from 0 to 100, with 100 being the highest quality</param>
-        public static void SaveJpeg(string path, Image img, int quality)
-        {
-            if (quality < 0 || quality > 100)
-                throw new ArgumentOutOfRangeException("quality must be between 0 and 100.");
-
-
-            // Encoder parameter for image quality
-            EncoderParameter qualityParam = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
-            // Jpeg image codec
-            ImageCodecInfo jpegCodec = GetEncoderInfo("image/jpeg");
-
-            EncoderParameters encoderParams = new EncoderParameters(1);
-            encoderParams.Param[0] = qualityParam;
-
-            // to avoid gdi+ error save image to stream instead directly on file system
-            using (MemoryStream ms = new MemoryStream())
-            {
-                img.Save(ms, jpegCodec, encoderParams);
-                ms.ToArray();
-                File.WriteAllBytes(path, ms.ToArray());
-                //img.Save(path, jpegCodec, encoderParams);
-            }
-        }
-
-        /// <summary>
-        /// Returns the image codec with the given mime type
-        /// </summary>
-        private static ImageCodecInfo GetEncoderInfo(string mimeType)
-        {
-            // Get image codecs for all image formats
-            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
-
-            // Find the correct image codec
-            for (int i = 0; i < codecs.Length; i++)
-                if (codecs[i].MimeType == mimeType)
-                    return codecs[i];
-            return null;
         }
     }
 }
