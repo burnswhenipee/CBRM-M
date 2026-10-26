@@ -10,6 +10,8 @@ using SharpCompress.Readers;
 
 namespace CbrConverter
 {
+    public enum Format { Comic, Pdf, ImageFolder }
+
     public class Extract
     {
         string temporaryDir;
@@ -24,7 +26,8 @@ namespace CbrConverter
         public delegate void ErrorNotify(Extract m, string e);
         public event ErrorNotify evnt_WarningNotify;
         public EventArgs e = null;
-        bool _ComicToPdf, _ComicToFolder, _PdfToCbz, _PdfToFolder, _FolderToCbz, _JoinImages;
+        Format _From, _To;
+        bool _JoinImages;
 
         // image types that can be put in a PDF
         static readonly string[] PdfImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff" };
@@ -32,16 +35,13 @@ namespace CbrConverter
         static readonly string[] OtherImageExtensions = { ".webp", ".avif", ".jxl", ".heic", ".jp2" };
 
         /// <summary>
-        /// Convert the selected file, or the files directly inside the selected folder (the files inside its
-        /// subfolders are not included, but each subfolder can be packed into a CBZ)
+        /// Convert the selected file, or the items of the "from" format directly inside the selected folder:
+        /// its CBR/CBZ files, its PDF files, or its subfolders of images (nothing deeper is included)
         /// </summary>
-        public void BeginExtraction(bool comicToPdf, bool comicToFolder, bool pdfToCbz, bool pdfToFolder, bool folderToCbz, bool joinImages)
+        public void BeginExtraction(Format from, Format to, bool joinImages)
         {
-            _ComicToPdf = comicToPdf;
-            _ComicToFolder = comicToFolder;
-            _PdfToCbz = pdfToCbz;
-            _PdfToFolder = pdfToFolder;
-            _FolderToCbz = folderToCbz;
+            _From = from;
+            _To = to;
             _JoinImages = joinImages;
 
             string source = DataAccess.Instance.g_WorkingDir;
@@ -50,9 +50,10 @@ namespace CbrConverter
                 files = new List<string> { source };
             else
             {
-                files = Directory.GetFiles(source).Where(IsConvertible).ToList();
-                if (_FolderToCbz)
-                    files.AddRange(Directory.GetDirectories(source));
+                if (from == Format.ImageFolder)
+                    files = Directory.GetDirectories(source).ToList();
+                else
+                    files = Directory.GetFiles(source).Where(f => from == Format.Comic ? IsComic(f) : IsPdf(f)).ToList();
                 files = files.OrderBy(f => f, StringComparer.CurrentCultureIgnoreCase).ToList();
                 if (files.Count == 0)
                     evnt_WarningNotify(this, source + " : nothing to convert in this folder");
@@ -110,23 +111,11 @@ namespace CbrConverter
         }
 
         /// <summary>
-        /// True if the file is one of the types selected for conversion
-        /// </summary>
-        private bool IsConvertible(string file)
-        {
-            if (IsComic(file))
-                return _ComicToPdf || _ComicToFolder;
-            if (IsPdf(file))
-                return _PdfToCbz || _PdfToFolder;
-            return false;
-        }
-
-        /// <summary>
         /// Unpack the file into a working folder, then write each selected output from it
         /// </summary>
         private void ConvertFile(string file)
         {
-            if (Directory.Exists(file))
+            if (_From == Format.ImageFolder)
             {
                 ConvertImageFolder(file);
                 return;
@@ -137,21 +126,19 @@ namespace CbrConverter
             temporaryDir = CreateWorkingDir();
             try
             {
-                if (IsComic(file))
-                {
+                if (_From == Format.Comic)
                     ExtractArchive(file, 50);
-                    if (_ComicToPdf && DataAccess.Instance.g_Processing)
-                        GeneratePdf(_ComicToFolder ? 40 : 50);
-                    if (_ComicToFolder && DataAccess.Instance.g_Processing)
-                        CopyToImageFolder();
-                }
                 else
-                {
                     ExtractPdf(file, 80);
-                    if (_PdfToCbz && DataAccess.Instance.g_Processing)
+
+                if (DataAccess.Instance.g_Processing)
+                {
+                    if (_To == Format.Pdf)
+                        GeneratePdf(temporaryDir, 50);
+                    else if (_To == Format.ImageFolder)
+                        CopyToImageFolder(temporaryDir);
+                    else
                         ZipFile.CreateFromDirectory(temporaryDir, GetAvailableOutputPath(".cbz"));
-                    if (_PdfToFolder && DataAccess.Instance.g_Processing)
-                        CopyToImageFolder();
                 }
                 if (DataAccess.Instance.g_Processing)
                     SetProgress(100);
@@ -163,7 +150,7 @@ namespace CbrConverter
         }
 
         /// <summary>
-        /// Pack the images directly inside a folder into a CBZ named after the folder
+        /// Turn the images directly inside a folder into a CBZ or PDF named after the folder
         /// </summary>
         private void ConvertImageFolder(string folder)
         {
@@ -173,12 +160,18 @@ namespace CbrConverter
                 .ToList();
             if (images.Count == 0)
             {
-                evnt_WarningNotify(this, folder + " : no images found in this folder, so no CBZ was made");
+                evnt_WarningNotify(this, string.Format("{0} : no images found in this folder, so no {1} was made", folder, _To == Format.Pdf ? "PDF" : "CBZ"));
                 return;
             }
 
             outputBase = Path.Combine(DataAccess.Instance.g_Output_dir, Path.GetFileName(folder));
             Directory.CreateDirectory(DataAccess.Instance.g_Output_dir);
+            if (_To == Format.Pdf)
+            {
+                GeneratePdf(folder, 100);
+                return;
+            }
+
             string savedfile = GetAvailableOutputPath(".cbz");
 
             double step = 100.0 / images.Count;
@@ -262,9 +255,9 @@ namespace CbrConverter
         /// <summary>
         /// Generate the pdf from the images, one page per image at its original size
         /// </summary>
-        private void GeneratePdf(double progressShare)
+        private void GeneratePdf(string imageDir, double progressShare)
         {
-            var imageFiles = Directory.GetFiles(temporaryDir).ToList();
+            var imageFiles = Directory.GetFiles(imageDir).ToList();
             imageFiles.Sort();
 
             foreach (string skipped in imageFiles.Where(f => OtherImageExtensions.Contains(Path.GetExtension(f).ToLower())))
@@ -308,11 +301,11 @@ namespace CbrConverter
         /// <summary>
         /// Copy the extracted images into a folder named after the source file
         /// </summary>
-        private void CopyToImageFolder()
+        private void CopyToImageFolder(string imageDir)
         {
             string folder = GetAvailableOutputPath(string.Empty);
             Directory.CreateDirectory(folder);
-            foreach (string file in Directory.GetFiles(temporaryDir))
+            foreach (string file in Directory.GetFiles(imageDir))
                 File.Copy(file, Path.Combine(folder, Path.GetFileName(file)));
         }
 

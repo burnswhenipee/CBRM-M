@@ -18,19 +18,18 @@ Now:
 - Window is resizable and maximizable; the log is always visible and fills the remaining space
 - Removed the show/hide log arrow
 - Long log messages can be read by widening the window or scrolling sideways; hover a row for the full message; Ctrl+A / Ctrl+C copy messages
-- Standard Windows file and folder dialogs (separate File... and Folder... buttons) that reopen at the last location used (Windows also remembers it between sessions)
-- Picking a source no longer resets the conversion options; options that don't apply are greyed out instead
+- Source is chosen with a standard Windows folder dialog (Browse...) that reopens at the last location used; to convert a single file, drag it onto the window
 - "Merge images from same Pdf page" is now unchecked by default
 - The "N images for M pages!" warning now also appears when the images were merged back into pages (it says "Merged into N images"), so sliced-up PDFs are always flagged
 - Only `.cbr`, `.cbz` and `.pdf` files are picked up; other files (including `.rar` and `.zip`, which the original also converted) are ignored
 - New, cleaner layout: Source / Output / Convert / Progress sections, a proper Start button, and the window can be dragged to any size
 - Drag a file or folder onto the window (or onto the .exe) to select it
 - Output is now "Same folder as source" or "Other folder", with a Browse button
-- The confusing "P/Img" checkbox is gone; "Merge sliced images back into whole pages" now sits under the PDF options, which it belongs to
-- New outputs: CBR/CBZ → image folder and PDF → image folder (alongside CBR/CBZ → PDF and PDF → CBZ; several can be ticked at once)
+- Conversion is now one choice: Convert [CBR / CBZ | PDF | Image folders] to [CBZ | PDF | Image folders] (any pair except same-to-same). This replaces the old checkboxes, including the confusing "P/Img"; "Merge sliced images back into whole pages" only appears when converting from PDF
+- New conversions: CBR/CBZ → image folders, PDF → image folders, image folders → CBZ and image folders → PDF
 - Removed "Compress images to reduce file size": images are always kept at their original resolution and quality
 - Folders are no longer processed recursively: only the files directly inside the selected folder are converted
-- New "Subfolders → CBZ" option: each subfolder of the selected folder is treated as one comic, and its images are packed into a CBZ named after it; subfolders without images are skipped with a warning
+- "Image folders" means the subfolders of the selected folder: each is treated as one comic made of the images directly inside it, and named after the subfolder; subfolders without images are skipped with a warning
 - Fixed: pages in different subfolders of an archive (e.g. one folder per chapter) with the same file name overwrote each other, losing pages
 - Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out
 - Fixed: pressing Stop during CBR/CBZ → PDF left a half-written PDF behind

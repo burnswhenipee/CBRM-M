@@ -10,10 +10,37 @@ namespace CbrConverter
     public partial class MainForm : Form
     {
         bool _fileSelected = false;
+        Format? _chosenTo; //last output format picked by the user, restored when it's available again
 
         // last locations picked in each dialog
         string _lastSourcePath = string.Empty;
         string _lastOutputPath = string.Empty;
+
+        /// <summary>
+        /// A format as shown in the From / To lists
+        /// </summary>
+        class FormatItem
+        {
+            public Format Format;
+            public string Name;
+            public FormatItem(Format format, string name) { Format = format; Name = name; }
+            public override string ToString() { return Name; }
+        }
+
+        static readonly FormatItem[] FromFormats =
+        {
+            new FormatItem(Format.Comic, "CBR / CBZ"),
+            new FormatItem(Format.Pdf, "PDF"),
+            new FormatItem(Format.ImageFolder, "Image folders"),
+        };
+
+        // CBR can't be written (RAR is proprietary), so comics are always output as CBZ
+        static readonly FormatItem[] ToFormats =
+        {
+            new FormatItem(Format.Comic, "CBZ"),
+            new FormatItem(Format.Pdf, "PDF"),
+            new FormatItem(Format.ImageFolder, "Image folders"),
+        };
 
         static readonly Color WarningColor = Color.FromArgb(150, 85, 0);
         static readonly Color ErrorColor = Color.Firebrick;
@@ -24,6 +51,9 @@ namespace CbrConverter
             InitializeComponent();
             PdfFunctions.evnt_UpdateCurBar += new PdfFunctions.UpdateCurrentBar(UpdateCurrBar);
             EnableDragDrop(this);
+
+            cmb_From.Items.AddRange(FromFormats);
+            cmb_From.SelectedIndex = 0;
 
             if (File.Exists(startPath) || Directory.Exists(startPath))
                 SetSource(Path.GetFullPath(startPath));
@@ -50,19 +80,8 @@ namespace CbrConverter
                 return;
             }
 
-            // only what is both ticked and applicable to the source
-            bool comicToPdf = chk_cbr2pdf.Checked && chk_cbr2pdf.Enabled;
-            bool comicToFolder = chk_ComicToFolder.Checked && chk_ComicToFolder.Enabled;
-            bool pdfToCbz = chk_pdf2cbr.Checked && chk_pdf2cbr.Enabled;
-            bool pdfToFolder = chk_PdfToFolder.Checked && chk_PdfToFolder.Enabled;
-            bool folderToCbz = chk_FolderToCbz.Checked && chk_FolderToCbz.Enabled;
             if (!_fileSelected)
                 return;
-            if (!comicToPdf && !comicToFolder && !pdfToCbz && !pdfToFolder && !folderToCbz)
-            {
-                MessageBox.Show(this, "Tick at least one conversion to run.", "CBR Converter", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
             if (rb_CustomFolder.Checked && !Directory.Exists(_lastOutputPath))
             {
                 MessageBox.Show(this, "Choose an output folder first, or select \"Same folder as source\".", "CBR Converter", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -80,7 +99,8 @@ namespace CbrConverter
             DataAccess.Instance.g_Processing = true;
             Extract ex = new Extract();
             this.Subscribe(ex);
-            ex.BeginExtraction(comicToPdf, comicToFolder, pdfToCbz, pdfToFolder, folderToCbz, chk_JoinImages.Checked);
+            var from = ((FormatItem)cmb_From.SelectedItem).Format;
+            ex.BeginExtraction(from, ((FormatItem)cmb_To.SelectedItem).Format, from == Format.Pdf && chk_JoinImages.Checked);
         }
 
         /// <summary>
@@ -88,7 +108,6 @@ namespace CbrConverter
         /// </summary>
         private void SetRunning(bool running)
         {
-            btn_SelectFile.Enabled = !running;
             btn_SelectFolder.Enabled = !running;
             layoutOutput.Enabled = !running;
             layoutOptions.Enabled = !running;
@@ -158,26 +177,11 @@ namespace CbrConverter
 
         #region Source and output selection
 
-        private void btn_SelectFile_Click(object sender, EventArgs e)
-        {
-            using (var dlg = new OpenFileDialog())
-            {
-                dlg.Title = "Select a file to convert";
-                dlg.Filter = "Comics and PDFs (*.cbr;*.cbz;*.pdf)|*.cbr;*.cbz;*.pdf";
-                dlg.InitialDirectory = LastSourceFolder(); //reopen where we were last
-                if (File.Exists(_lastSourcePath))
-                    dlg.FileName = Path.GetFileName(_lastSourcePath);
-
-                if (dlg.ShowDialog(this) == DialogResult.OK)
-                    SetSource(dlg.FileName);
-            }
-        }
-
         private void btn_SelectFolder_Click(object sender, EventArgs e)
         {
             using (var dlg = new FolderBrowserDialog())
             {
-                dlg.Description = "Select a folder to convert (subfolders are converted too)";
+                dlg.Description = "Select a folder to convert";
                 dlg.UseDescriptionForTitle = true;
                 dlg.SelectedPath = LastSourceFolder(); //reopen where we were last
 
@@ -210,14 +214,10 @@ namespace CbrConverter
             tbox_SourceFile.Text = path;
             tbox_SourceFile.SelectionStart = tbox_SourceFile.Text.Length; //show the end of long paths
 
-            // only enable the conversions that apply to the selection, but keep what the user ticked
-            string ext = File.Exists(path) ? Path.GetExtension(path).ToLower() : string.Empty;
-            bool isFolder = Directory.Exists(path);
-            bool isArchive = ext == ".cbr" || ext == ".cbz";
-            lbl_ComicTo.Enabled = chk_cbr2pdf.Enabled = chk_ComicToFolder.Enabled = isFolder || isArchive;
-            lbl_PdfTo.Enabled = chk_pdf2cbr.Enabled = chk_PdfToFolder.Enabled = isFolder || ext == ".pdf";
-            lbl_FolderTo.Enabled = chk_FolderToCbz.Enabled = isFolder;
-            UpdateMergeOption();
+            // a single file fixes the "from" format; a folder can be converted from any of them
+            if (File.Exists(path))
+                cmb_From.SelectedIndex = Array.FindIndex(FromFormats, f => f.Format == (type == ".pdf" ? Format.Pdf : Format.Comic));
+            cmb_From.Enabled = Directory.Exists(path);
 
             _fileSelected = true;
             btn_StartStop.Enabled = true;
@@ -267,17 +267,29 @@ namespace CbrConverter
             return Directory.Exists(source) ? source : Path.GetDirectoryName(source);
         }
 
-        private void chk_PdfOutput_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Offer every format except the one converted from, keeping the current choice when possible
+        /// </summary>
+        private void cmb_From_SelectedIndexChanged(object sender, EventArgs e)
         {
-            UpdateMergeOption();
+            var from = ((FormatItem)cmb_From.SelectedItem).Format;
+            var previous = (cmb_To.SelectedItem as FormatItem)?.Format;
+
+            cmb_To.Items.Clear();
+            cmb_To.Items.AddRange(ToFormats.Where(f => f.Format != from).ToArray());
+            var choices = cmb_To.Items.Cast<FormatItem>().ToList();
+            int keep = choices.FindIndex(f => f.Format == _chosenTo);
+            if (keep < 0)
+                keep = choices.FindIndex(f => f.Format == previous);
+            cmb_To.SelectedIndex = keep >= 0 ? keep : 0;
+
+            // merging sliced images only applies when converting from PDF
+            chk_JoinImages.Visible = from == Format.Pdf;
         }
 
-        /// <summary>
-        /// Merging only applies when converting PDFs
-        /// </summary>
-        private void UpdateMergeOption()
+        private void cmb_To_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            chk_JoinImages.Enabled = chk_pdf2cbr.Enabled && (chk_pdf2cbr.Checked || chk_PdfToFolder.Checked);
+            _chosenTo = ((FormatItem)cmb_To.SelectedItem).Format;
         }
 
         #endregion
@@ -310,7 +322,7 @@ namespace CbrConverter
 
             SetSource(paths[0]);
             if (paths.Length > 1)
-                LogWarning(null, string.Format("{0} items were dropped; only {1} will be converted. Drop a folder to convert several files.", paths.Length, paths[0]));
+                LogWarning(null, string.Format("{0} items were dropped; only {1} will be converted. Use Browse to convert a whole folder.", paths.Length, paths[0]));
         }
 
         #endregion
