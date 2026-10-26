@@ -55,9 +55,10 @@ namespace CbrConverter
             bool comicToFolder = chk_ComicToFolder.Checked && chk_ComicToFolder.Enabled;
             bool pdfToCbz = chk_pdf2cbr.Checked && chk_pdf2cbr.Enabled;
             bool pdfToFolder = chk_PdfToFolder.Checked && chk_PdfToFolder.Enabled;
+            bool folderToCbz = chk_FolderToCbz.Checked && chk_FolderToCbz.Enabled;
             if (!_fileSelected)
                 return;
-            if (!comicToPdf && !comicToFolder && !pdfToCbz && !pdfToFolder)
+            if (!comicToPdf && !comicToFolder && !pdfToCbz && !pdfToFolder && !folderToCbz)
             {
                 MessageBox.Show(this, "Tick at least one conversion to run.", "CBR Converter", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -79,7 +80,7 @@ namespace CbrConverter
             DataAccess.Instance.g_Processing = true;
             Extract ex = new Extract();
             this.Subscribe(ex);
-            ex.BeginExtraction(comicToPdf, comicToFolder, pdfToCbz, pdfToFolder, chk_JoinImages.Checked);
+            ex.BeginExtraction(comicToPdf, comicToFolder, pdfToCbz, pdfToFolder, folderToCbz, chk_JoinImages.Checked);
         }
 
         /// <summary>
@@ -215,6 +216,7 @@ namespace CbrConverter
             bool isArchive = ext == ".cbr" || ext == ".cbz";
             lbl_ComicTo.Enabled = chk_cbr2pdf.Enabled = chk_ComicToFolder.Enabled = isFolder || isArchive;
             lbl_PdfTo.Enabled = chk_pdf2cbr.Enabled = chk_PdfToFolder.Enabled = isFolder || ext == ".pdf";
+            lbl_FolderTo.Enabled = chk_FolderToCbz.Enabled = isFolder;
             UpdateMergeOption();
 
             _fileSelected = true;

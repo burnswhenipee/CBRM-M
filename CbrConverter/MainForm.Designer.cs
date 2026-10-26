@@ -48,6 +48,8 @@
             this.chk_ComicToFolder = new System.Windows.Forms.CheckBox();
             this.lbl_PdfTo = new System.Windows.Forms.Label();
             this.chk_PdfToFolder = new System.Windows.Forms.CheckBox();
+            this.lbl_FolderTo = new System.Windows.Forms.Label();
+            this.chk_FolderToCbz = new System.Windows.Forms.CheckBox();
             this.chk_cbr2pdf = new System.Windows.Forms.CheckBox();
             this.chk_pdf2cbr = new System.Windows.Forms.CheckBox();
             this.chk_JoinImages = new System.Windows.Forms.CheckBox();
@@ -175,7 +177,7 @@
             this.lbl_SourceHint.ForeColor = System.Drawing.SystemColors.GrayText;
             this.lbl_SourceHint.Margin = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.lbl_SourceHint.Name = "lbl_SourceHint";
-            this.lbl_SourceHint.Text = "You can also drag a file or folder onto this window. Subfolders are not included.";
+            this.lbl_SourceHint.Text = "You can also drag a file or folder onto this window. Files inside subfolders are not converted.";
             //
             // lbl_OutputHeading
             //
@@ -273,10 +275,13 @@
             this.layoutOptions.Controls.Add(this.chk_PdfToFolder, 2, 1);
             this.layoutOptions.Controls.Add(this.chk_JoinImages, 1, 2);
             this.layoutOptions.SetColumnSpan(this.chk_JoinImages, 2);
+            this.layoutOptions.Controls.Add(this.lbl_FolderTo, 0, 3);
+            this.layoutOptions.Controls.Add(this.chk_FolderToCbz, 1, 3);
             this.layoutOptions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.layoutOptions.Margin = new System.Windows.Forms.Padding(0);
             this.layoutOptions.Name = "layoutOptions";
-            this.layoutOptions.RowCount = 3;
+            this.layoutOptions.RowCount = 4;
+            this.layoutOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.layoutOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.layoutOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.layoutOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -348,6 +353,23 @@
             this.chk_JoinImages.TabIndex = 4;
             this.chk_JoinImages.Text = "Merge sliced images back into whole pages";
             this.chk_JoinImages.UseVisualStyleBackColor = true;
+            //
+            // lbl_FolderTo
+            //
+            this.lbl_FolderTo.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lbl_FolderTo.AutoSize = true;
+            this.lbl_FolderTo.Margin = new System.Windows.Forms.Padding(0, 6, 16, 0);
+            this.lbl_FolderTo.Name = "lbl_FolderTo";
+            this.lbl_FolderTo.Text = "Subfolders  →";
+            //
+            // chk_FolderToCbz
+            //
+            this.chk_FolderToCbz.AutoSize = true;
+            this.chk_FolderToCbz.Margin = new System.Windows.Forms.Padding(0, 6, 16, 0);
+            this.chk_FolderToCbz.Name = "chk_FolderToCbz";
+            this.chk_FolderToCbz.TabIndex = 5;
+            this.chk_FolderToCbz.Text = "CBZ";
+            this.chk_FolderToCbz.UseVisualStyleBackColor = true;
             //
             // lbl_ProgressHeading
             //
@@ -580,6 +602,8 @@
         private System.Windows.Forms.CheckBox chk_ComicToFolder;
         private System.Windows.Forms.Label lbl_PdfTo;
         private System.Windows.Forms.CheckBox chk_PdfToFolder;
+        private System.Windows.Forms.Label lbl_FolderTo;
+        private System.Windows.Forms.CheckBox chk_FolderToCbz;
         private System.Windows.Forms.CheckBox chk_cbr2pdf;
         private System.Windows.Forms.CheckBox chk_pdf2cbr;
         private System.Windows.Forms.CheckBox chk_JoinImages;

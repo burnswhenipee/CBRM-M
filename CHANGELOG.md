@@ -30,6 +30,7 @@ Now:
 - New outputs: CBR/CBZ → image folder and PDF → image folder (alongside CBR/CBZ → PDF and PDF → CBZ; several can be ticked at once)
 - Removed "Compress images to reduce file size": images are always kept at their original resolution and quality
 - Folders are no longer processed recursively: only the files directly inside the selected folder are converted
+- New "Subfolders → CBZ" option: each subfolder of the selected folder is treated as one comic, and its images are packed into a CBZ named after it; subfolders without images are skipped with a warning
 - Fixed: pages in different subfolders of an archive (e.g. one folder per chapter) with the same file name overwrote each other, losing pages
 - Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out
 - Fixed: pressing Stop during CBR/CBZ → PDF left a half-written PDF behind

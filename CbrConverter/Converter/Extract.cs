@@ -24,7 +24,7 @@ namespace CbrConverter
         public delegate void ErrorNotify(Extract m, string e);
         public event ErrorNotify evnt_WarningNotify;
         public EventArgs e = null;
-        bool _ComicToPdf, _ComicToFolder, _PdfToCbz, _PdfToFolder, _JoinImages;
+        bool _ComicToPdf, _ComicToFolder, _PdfToCbz, _PdfToFolder, _FolderToCbz, _JoinImages;
 
         // image types that can be put in a PDF
         static readonly string[] PdfImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff" };
@@ -32,14 +32,16 @@ namespace CbrConverter
         static readonly string[] OtherImageExtensions = { ".webp", ".avif", ".jxl", ".heic", ".jp2" };
 
         /// <summary>
-        /// Convert the selected file, or the files directly inside the selected folder (subfolders are not included)
+        /// Convert the selected file, or the files directly inside the selected folder (the files inside its
+        /// subfolders are not included, but each subfolder can be packed into a CBZ)
         /// </summary>
-        public void BeginExtraction(bool comicToPdf, bool comicToFolder, bool pdfToCbz, bool pdfToFolder, bool joinImages)
+        public void BeginExtraction(bool comicToPdf, bool comicToFolder, bool pdfToCbz, bool pdfToFolder, bool folderToCbz, bool joinImages)
         {
             _ComicToPdf = comicToPdf;
             _ComicToFolder = comicToFolder;
             _PdfToCbz = pdfToCbz;
             _PdfToFolder = pdfToFolder;
+            _FolderToCbz = folderToCbz;
             _JoinImages = joinImages;
 
             string source = DataAccess.Instance.g_WorkingDir;
@@ -48,9 +50,12 @@ namespace CbrConverter
                 files = new List<string> { source };
             else
             {
-                files = Directory.GetFiles(source).Where(IsConvertible).OrderBy(f => f, StringComparer.CurrentCultureIgnoreCase).ToList();
+                files = Directory.GetFiles(source).Where(IsConvertible).ToList();
+                if (_FolderToCbz)
+                    files.AddRange(Directory.GetDirectories(source));
+                files = files.OrderBy(f => f, StringComparer.CurrentCultureIgnoreCase).ToList();
                 if (files.Count == 0)
-                    evnt_WarningNotify(this, source + " : no files to convert in this folder");
+                    evnt_WarningNotify(this, source + " : nothing to convert in this folder");
             }
 
             DataAccess.Instance.g_FileIndex = 0;
@@ -121,6 +126,12 @@ namespace CbrConverter
         /// </summary>
         private void ConvertFile(string file)
         {
+            if (Directory.Exists(file))
+            {
+                ConvertImageFolder(file);
+                return;
+            }
+
             outputBase = Path.Combine(DataAccess.Instance.g_Output_dir, Path.GetFileNameWithoutExtension(file));
             Directory.CreateDirectory(DataAccess.Instance.g_Output_dir);
             temporaryDir = CreateWorkingDir();
@@ -149,6 +160,43 @@ namespace CbrConverter
             {
                 DeleteWorkingDir();
             }
+        }
+
+        /// <summary>
+        /// Pack the images directly inside a folder into a CBZ named after the folder
+        /// </summary>
+        private void ConvertImageFolder(string folder)
+        {
+            var images = Directory.GetFiles(folder)
+                .Where(f => PdfImageExtensions.Contains(Path.GetExtension(f).ToLower()) || OtherImageExtensions.Contains(Path.GetExtension(f).ToLower()))
+                .OrderBy(f => f, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+            if (images.Count == 0)
+            {
+                evnt_WarningNotify(this, folder + " : no images found in this folder, so no CBZ was made");
+                return;
+            }
+
+            outputBase = Path.Combine(DataAccess.Instance.g_Output_dir, Path.GetFileName(folder));
+            Directory.CreateDirectory(DataAccess.Instance.g_Output_dir);
+            string savedfile = GetAvailableOutputPath(".cbz");
+
+            double step = 100.0 / images.Count;
+            using (var zip = ZipFile.Open(savedfile, ZipArchiveMode.Create))
+            {
+                foreach (string image in images)
+                {
+                    if (!DataAccess.Instance.g_Processing)
+                        break;
+                    // images are already compressed, storing them as they are is much faster
+                    zip.CreateEntryFromFile(image, Path.GetFileName(image), CompressionLevel.NoCompression);
+                    SetProgress(DataAccess.Instance.g_curProgress + step);
+                }
+            }
+
+            // stopped halfway: don't leave an incomplete CBZ behind
+            if (!DataAccess.Instance.g_Processing)
+                File.Delete(savedfile);
         }
 
         /// <summary>
