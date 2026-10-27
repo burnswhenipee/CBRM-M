@@ -31,6 +31,9 @@ Now:
 - Folders are no longer processed recursively: only the files directly inside the selected folder are converted
 - "Image folders" means the subfolders of the selected folder: each is treated as one comic made of the images directly inside it, and named after the subfolder; subfolders without images are skipped with a warning
 - Fixed: pages in different subfolders of an archive (e.g. one folder per chapter) with the same file name overwrote each other, losing pages
+- Only images are taken from CBR/CBZ files; anything else inside (PDFs, text files, etc.) is ignored, with one warning per file
+- Folders inside CBR/CBZ files are kept: "Image folders" output recreates them, and PDF output takes the pages folder by folder in reading order (a single folder wrapping everything is dropped)
+- Archive entries that try to write outside the output folder (e.g. `..\..\file`) are blocked
 - JPEG 2000 (`.jp2`, `.j2k`) images can now be put in PDFs as they are, without conversion
 - Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out, with one message per file rather than one per image
 - Text layers in PDFs (visible text or hidden OCR text) are ignored: only the page images are extracted, byte-for-byte as stored in the PDF

@@ -134,7 +134,7 @@ namespace CbrConverter
                 if (DataAccess.Instance.g_Processing)
                 {
                     if (_To == Format.Pdf)
-                        GeneratePdf(temporaryDir, 50);
+                        GeneratePdf(temporaryDir, 50, true);
                     else if (_To == Format.ImageFolder)
                         CopyToImageFolder(temporaryDir);
                     else
@@ -168,7 +168,7 @@ namespace CbrConverter
             Directory.CreateDirectory(DataAccess.Instance.g_Output_dir);
             if (_To == Format.Pdf)
             {
-                GeneratePdf(folder, 100);
+                GeneratePdf(folder, 100, false);
                 return;
             }
 
@@ -200,10 +200,19 @@ namespace CbrConverter
             using var archive = ArchiveFactory.OpenArchive(file, new ReaderOptions());
             var entries = archive.Entries.Where(entry => !entry.IsDirectory).ToList();
 
-            // pages can sit in subfolders (e.g. one per chapter): drop the folder they all share and
-            // fold the rest into the file name, so pages with the same name don't overwrite each other
-            var keys = entries.Select(entry => entry.Key.Replace('\\', '/')).ToList();
+            // only images are taken; anything else in the archive (PDFs, text, ...) is left out
+            var images = entries.Where(entry => IsImage(entry.Key)).ToList();
+            var others = entries.Where(entry => !IsImage(entry.Key)).ToList();
+            if (others.Count > 0)
+                evnt_WarningNotify(this, string.Format("{0} : contains {1} files that aren't images ({2}), they were ignored",
+                    file, others.Count, string.Join(", ", others.Select(entry => Extension(entry.Key)).Distinct())));
+            if (images.Count == 0)
+                throw new Exception("contains no images");
+
+            // keep the archive's folders (e.g. one per chapter), but drop a folder that wraps everything
+            var keys = images.Select(entry => entry.Key.Replace('\\', '/')).ToList();
             string commonDir = CommonDirectory(keys);
+            string root = Path.GetFullPath(temporaryDir) + Path.DirectorySeparatorChar;
 
             var options = new ExtractionOptions
             {
@@ -212,13 +221,57 @@ namespace CbrConverter
                 PreserveFileTime = true
             };
 
-            double step = entries.Count > 0 ? progressShare / entries.Count : 0;
-            for (int i = 0; i < entries.Count && DataAccess.Instance.g_Processing; i++)
+            double step = progressShare / images.Count;
+            for (int i = 0; i < images.Count && DataAccess.Instance.g_Processing; i++)
             {
-                string name = keys[i].Substring(commonDir.Length).Replace('/', '_');
-                entries[i].WriteToFile(Path.Combine(temporaryDir, name), options);
+                string relative = keys[i].Substring(commonDir.Length).TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                string path = Path.GetFullPath(Path.Combine(temporaryDir, relative));
+                // never write outside the working folder (entries named like "..\\..\\file")
+                if (!path.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                {
+                    evnt_WarningNotify(this, string.Format("{0} : {1} points outside the archive, it was ignored", file, images[i].Key));
+                    continue;
+                }
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                images[i].WriteToFile(path, options);
                 SetProgress(DataAccess.Instance.g_curProgress + step);
             }
+        }
+
+        private static string Extension(string path)
+        {
+            return Path.GetExtension(path).ToLower();
+        }
+
+        private static bool IsImage(string path)
+        {
+            string ext = Extension(path);
+            return PdfImageExtensions.Contains(ext) || OtherImageExtensions.Contains(ext);
+        }
+
+        /// <summary>
+        /// The images under a folder, in reading order: within each folder its files first, then its subfolders,
+        /// each sorted by name
+        /// </summary>
+        private static List<string> ImagesInReadingOrder(string dir, bool includeSubfolders)
+        {
+            var files = Directory.GetFiles(dir, "*", includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+            var parts = files.ToDictionary(f => f, f => Path.GetRelativePath(dir, f).Split(Path.DirectorySeparatorChar));
+            var list = files.ToList();
+            list.Sort((a, b) =>
+            {
+                string[] x = parts[a], y = parts[b];
+                for (int i = 0; ; i++)
+                {
+                    bool xFile = i == x.Length - 1, yFile = i == y.Length - 1;
+                    if (xFile != yFile)
+                        return xFile ? -1 : 1;
+                    int c = string.Compare(x[i], y[i], StringComparison.CurrentCultureIgnoreCase);
+                    if (c != 0 || xFile)
+                        return c;
+                }
+            });
+            return list;
         }
 
         /// <summary>
@@ -255,10 +308,9 @@ namespace CbrConverter
         /// <summary>
         /// Generate the pdf from the images, one page per image at its original size
         /// </summary>
-        private void GeneratePdf(string imageDir, double progressShare)
+        private void GeneratePdf(string imageDir, double progressShare, bool includeSubfolders)
         {
-            var imageFiles = Directory.GetFiles(imageDir).ToList();
-            imageFiles.Sort();
+            var imageFiles = ImagesInReadingOrder(imageDir, includeSubfolders);
 
             // one message per file, not one per image
             var skipped = imageFiles.Where(f => OtherImageExtensions.Contains(Path.GetExtension(f).ToLower())).ToList();
@@ -319,14 +371,18 @@ namespace CbrConverter
         }
 
         /// <summary>
-        /// Copy the extracted images into a folder named after the source file
+        /// Copy the extracted images, with their subfolders, into a folder named after the source file
         /// </summary>
         private void CopyToImageFolder(string imageDir)
         {
             string folder = GetAvailableOutputPath(string.Empty);
             Directory.CreateDirectory(folder);
-            foreach (string file in Directory.GetFiles(imageDir))
-                File.Copy(file, Path.Combine(folder, Path.GetFileName(file)));
+            foreach (string file in Directory.GetFiles(imageDir, "*", SearchOption.AllDirectories))
+            {
+                string target = Path.Combine(folder, Path.GetRelativePath(imageDir, file));
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
+                File.Copy(file, target);
+            }
         }
 
         private void SetProgress(double value)
