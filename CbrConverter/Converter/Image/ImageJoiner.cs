@@ -23,6 +23,14 @@ namespace CbrConverter
 
             foreach (var imagesInfo in imageListByPage)
             {
+                // a page made of one image is kept exactly as extracted
+                if (imagesInfo.Count() == 1)
+                {
+                    var single = imagesInfo.First();
+                    newImageList.Add(single.Key, single.Value);
+                    continue;
+                }
+
                 var imagesPage = new Dictionary<PageImageIndex, System.Drawing.Image>();
 
                 foreach (var item in imagesInfo)
@@ -67,6 +75,10 @@ namespace CbrConverter
             // Create new image with max width and sum of all height
             System.Drawing.Bitmap newImage = new System.Drawing.Bitmap(maxWidth, maxHeight);
             System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(newImage);
+            // copy the pixels exactly, without smoothing or resampling
+            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
             // merge all images
             g.Clear(System.Drawing.SystemColors.AppWorkspace);
@@ -74,13 +86,13 @@ namespace CbrConverter
             {
                 if (position == 0)
                 {
-                    g.DrawImage(img.Value, new System.Drawing.Point(0, 0));
+                    g.DrawImage(img.Value, 0, 0, img.Value.Width, img.Value.Height);
                     position++;
                     maxHeight = img.Value.Height;
                 }
                 else
                 {
-                    g.DrawImage(img.Value, new System.Drawing.Point(0, maxHeight));
+                    g.DrawImage(img.Value, 0, maxHeight, img.Value.Width, img.Value.Height);
                     maxHeight += img.Value.Height;
                 }
 
@@ -95,11 +107,11 @@ namespace CbrConverter
             {
                 PageIndex = groupImages.First().Key.PageIndex,
                 ImageIndex = 1,
-                ImageName = string.Format("{0:0000}_{1:0000}.jpg", groupImages.First().Key.PageIndex, 1)
+                ImageName = string.Format("{0:0000}_{1:0000}.png", groupImages.First().Key.PageIndex, 1)
             };
 
             var newImagePath = string.Format(@"{0}\{1}", outputPath, pageDetails.ImageName);
-            newImage.Save(newImagePath);
+            newImage.Save(newImagePath, System.Drawing.Imaging.ImageFormat.Png);
             newImage.Dispose();
 
             return new KeyValuePair<PageImageIndex, System.Drawing.Image>(pageDetails, null);
