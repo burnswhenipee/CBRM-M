@@ -30,9 +30,9 @@ namespace CbrConverter
         bool _JoinImages;
 
         // image types that can be put in a PDF
-        static readonly string[] PdfImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff" };
+        static readonly string[] PdfImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".jp2", ".j2k" };
         // other image types that may be found in comics, reported when they can't be put in a PDF
-        static readonly string[] OtherImageExtensions = { ".webp", ".avif", ".jxl", ".heic", ".jp2" };
+        static readonly string[] OtherImageExtensions = { ".webp", ".avif", ".jxl", ".heic" };
 
         /// <summary>
         /// Convert the selected file, or the items of the "from" format directly inside the selected folder:
@@ -260,17 +260,24 @@ namespace CbrConverter
             var imageFiles = Directory.GetFiles(imageDir).ToList();
             imageFiles.Sort();
 
-            foreach (string skipped in imageFiles.Where(f => OtherImageExtensions.Contains(Path.GetExtension(f).ToLower())))
-                evnt_WarningNotify(this, string.Format("{0} : {1} was left out of the PDF, this image type can't be put in a PDF", DataAccess.Instance.g_WorkingFile, Path.GetFileName(skipped)));
+            // one message per file, not one per image
+            var skipped = imageFiles.Where(f => OtherImageExtensions.Contains(Path.GetExtension(f).ToLower())).ToList();
+            string skippedTypes = string.Join(", ", skipped.Select(f => Path.GetExtension(f).ToLower()).Distinct());
             imageFiles = imageFiles.Where(f => PdfImageExtensions.Contains(Path.GetExtension(f).ToLower())).ToList();
             if (imageFiles.Count == 0)
-                throw new Exception("no images found to put in the PDF");
+                throw new Exception(skipped.Count > 0
+                    ? string.Format("contains only images that can't be put in a PDF ({0}), so no PDF was made", skippedTypes)
+                    : "no images found, so no PDF was made");
+            if (skipped.Count > 0)
+                evnt_WarningNotify(this, string.Format("{0} : contains {1} images that can't be put in a PDF ({2}), they were left out", DataAccess.Instance.g_WorkingFile, skipped.Count, skippedTypes));
 
             string filename = GetAvailableOutputPath(".pdf");
             var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4);
             var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, new FileStream(filename, FileMode.Create));
             document.Open();
 
+            int added = 0, failed = 0;
+            string firstFailure = null;
             double step = progressShare / imageFiles.Count;
             foreach (string imageFile in imageFiles)
             {
@@ -283,19 +290,32 @@ namespace CbrConverter
                     document.NewPage();
                     img.SetAbsolutePosition(0, 0);
                     writer.DirectContent.AddImage(img);
+                    added++;
                 }
                 catch (Exception ex)
                 {
-                    evnt_ErrorNotify(this, DataAccess.Instance.g_WorkingFile + " : " + Path.GetFileName(imageFile) + " : " + ex.Message);
+                    failed++;
+                    if (firstFailure == null)
+                        firstFailure = Path.GetFileName(imageFile) + " : " + ex.Message;
                 }
                 SetProgress(DataAccess.Instance.g_curProgress + step);
             }
 
-            document.Close();
+            try
+            {
+                document.Close();
+            }
+            catch when (added == 0)
+            {
+                // a PDF without pages can't be saved; reported below
+            }
 
-            // stopped halfway: don't leave an incomplete PDF behind
-            if (!DataAccess.Instance.g_Processing)
+            // stopped halfway, or nothing could be added: don't leave an incomplete PDF behind
+            if (!DataAccess.Instance.g_Processing || added == 0)
                 File.Delete(filename);
+            if (failed > 0)
+                evnt_ErrorNotify(this, string.Format("{0} : {1} of {2} images couldn't be added to the PDF{3} (first: {4})",
+                    DataAccess.Instance.g_WorkingFile, failed, imageFiles.Count, added == 0 ? ", so no PDF was made" : "", firstFailure));
         }
 
         /// <summary>
