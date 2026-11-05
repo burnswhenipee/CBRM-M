@@ -459,6 +459,7 @@
             this.listViewLog.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listViewLog_DrawColumnHeader);
             this.listViewLog.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listViewLog_DrawItem);
             this.listViewLog.DrawSubItem += new System.Windows.Forms.DrawListViewSubItemEventHandler(this.listViewLog_DrawSubItem);
+            this.listViewLog.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewLog_ColumnClick);
             this.listViewLog.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewLog_KeyDown);
             this.listViewLog.Resize += new System.EventHandler(this.listViewLog_Resize);
             //

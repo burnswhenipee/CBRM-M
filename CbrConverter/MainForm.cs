@@ -42,6 +42,9 @@ namespace CbrConverter
             new FormatItem(Format.ImageFolder, "Image folders"),
         };
 
+        int _logSequence = 0;   //order in which log entries were added
+        bool _groupByType = false;
+
         static readonly Color WarningColor = Color.FromArgb(150, 85, 0);
         static readonly Color ErrorColor = Color.Firebrick;
 
@@ -95,6 +98,12 @@ namespace CbrConverter
             pbar_ActualFile.Value = 0;
             pbar_TotalProgress.Value = 0;
 
+            if (_groupByType)
+            {
+                // new entries go at the bottom while converting
+                _groupByType = false;
+                ApplyLogSort();
+            }
             SetRunning(true);
             DataAccess.Instance.g_Processing = true;
             Extract ex = new Extract();
@@ -350,6 +359,7 @@ namespace CbrConverter
             var item = new ListViewItem(new[] { DateTime.Now.ToString("HH:mm:ss"), type, message });
             item.ForeColor = color;
             item.ToolTipText = message;
+            item.Tag = _logSequence++;
             listViewLog.Items.Add(item);
             item.EnsureVisible();
             ResizeLogColumn();
@@ -415,6 +425,49 @@ namespace CbrConverter
             {
                 Clipboard.SetText(LogText(listViewLog.SelectedItems.Cast<ListViewItem>()));
                 e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Clicking "Type" groups the log (errors, then warnings) and clicking it again or "Time" restores time order
+        /// </summary>
+        private void listViewLog_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            if (e.Column == 1)
+                _groupByType = !_groupByType;
+            else if (e.Column == 0)
+                _groupByType = false;
+            else
+                return;
+            ApplyLogSort();
+        }
+
+        private void ApplyLogSort()
+        {
+            columnHeaderType.Text = _groupByType ? "Type ▼" : "Type";
+            listViewLog.ListViewItemSorter = new LogSorter(_groupByType);
+            listViewLog.Sort();
+        }
+
+        /// <summary>
+        /// Time order, or errors before warnings with each group in time order
+        /// </summary>
+        class LogSorter : System.Collections.IComparer
+        {
+            readonly bool _byType;
+            public LogSorter(bool byType) { _byType = byType; }
+
+            public int Compare(object a, object b)
+            {
+                var x = (ListViewItem)a;
+                var y = (ListViewItem)b;
+                if (_byType)
+                {
+                    int byType = string.Compare(x.SubItems[1].Text, y.SubItems[1].Text, StringComparison.Ordinal); // "Error" < "Warning"
+                    if (byType != 0)
+                        return byType;
+                }
+                return ((int)x.Tag).CompareTo((int)y.Tag);
             }
         }
 
