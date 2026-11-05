@@ -104,7 +104,15 @@ namespace CbrConverter
                     foreach (var image in page.GetImages())
                     {
                         // keep JPEG and JPEG 2000 data exactly as stored; anything else is decoded to PNG
-                        byte[] bytes = image.RawMemory.ToArray();
+                        byte[] bytes;
+                        try
+                        {
+                            bytes = UnwrapImageData(image);
+                        }
+                        catch
+                        {
+                            bytes = image.RawMemory.ToArray();
+                        }
                         string ext;
                         if (bytes.Length > 2 && bytes[0] == 0xFF && bytes[1] == 0xD8)
                             ext = "jpg";
@@ -138,6 +146,24 @@ namespace CbrConverter
                 }
             }
             return images;
+        }
+
+        /// <summary>
+        /// Undo any encodings wrapped around the image data (ASCII85, Flate, ...) but stop before a final
+        /// JPEG or JPEG 2000 layer, so that data is kept exactly as stored
+        /// </summary>
+        private static byte[] UnwrapImageData(UglyToad.PdfPig.Content.IPdfImage image)
+        {
+            var provider = UglyToad.PdfPig.Filters.DefaultFilterProvider.Instance;
+            var filters = provider.GetFilters(image.ImageDictionary);
+            var data = image.RawMemory;
+            for (int i = 0; i < filters.Count; i++)
+            {
+                if (filters[i] is UglyToad.PdfPig.Filters.DctDecodeFilter || filters[i] is UglyToad.PdfPig.Filters.JpxDecodeFilter)
+                    break;
+                data = filters[i].Decode(data, image.ImageDictionary, provider, i);
+            }
+            return data.ToArray();
         }
 
 //////////////////////////////////////////////// OLD METHOD (bug, sometime find same images for each pages)

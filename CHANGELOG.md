@@ -37,6 +37,7 @@ Now:
 - JPEG 2000 (`.jp2`, `.j2k`) images can now be put in PDFs as they are, without conversion
 - Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out, with one message per file rather than one per image
 - PDFs using AES-256 revision 6 encryption (Acrobat X and later, e.g. "no copying" permission settings) can now be converted; they used to fail with "Unknown encryption type R = 6". PDFs that need a password to open are reported clearly
+- Slightly damaged PDFs that the original rejected (e.g. "Rebuild failed: - is not a valid number") are now read with a second, more forgiving PDF reader
 - Text layers in PDFs (visible text or hidden OCR text) are ignored: only the page images are extracted, byte-for-byte as stored in the PDF
 - Merging sliced images: pages that weren't sliced are now kept exactly as extracted instead of being re-saved; slices are joined pixel-for-pixel regardless of their DPI setting; merged pages are saved as lossless `.png` (they used to be PNG data with a `.jpg` name)
 - Fixed: pressing Stop during CBR/CBZ → PDF left a half-written PDF behind
