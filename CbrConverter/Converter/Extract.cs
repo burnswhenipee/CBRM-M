@@ -295,6 +295,9 @@ namespace CbrConverter
         {
             var result = PdfFunctions.PDF_ExportImage(file, temporaryDir, progressShare, true, _JoinImages);
 
+            if (result.ImagesSkipped > 0)
+                evnt_WarningNotify(this, string.Format("{0} : {1} images couldn't be read and were left out", file, result.ImagesSkipped));
+
             // report sliced pages even when they were merged back together
             if (result.ImagesBeforeMerge != result.Pages)
             {

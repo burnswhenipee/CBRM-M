@@ -14,7 +14,7 @@ Now:
 
 ## Other changes so far
 
-- Ported to .NET 8; updated SharpCompress (0.26 → 0.50.7) and iTextSharp (5.5.13.4); replaced the deprecated DotNetZip with built-in zip support
+- Ported to .NET 8; updated SharpCompress (0.26 → 0.50.7) and iTextSharp (5.5.13.4); replaced the deprecated DotNetZip with built-in zip support; added PdfPig for PDFs iTextSharp can't open
 - Window is resizable and maximizable; the log is always visible and fills the remaining space
 - Removed the show/hide log arrow
 - Long log messages can be read by widening the window or scrolling sideways; hover a row for the full message; Ctrl+A / Ctrl+C copy messages
@@ -36,6 +36,7 @@ Now:
 - Archive entries that try to write outside the output folder (e.g. `..\..\file`) are blocked
 - JPEG 2000 (`.jp2`, `.j2k`) images can now be put in PDFs as they are, without conversion
 - Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out, with one message per file rather than one per image
+- PDFs using AES-256 revision 6 encryption (Acrobat X and later, e.g. "no copying" permission settings) can now be converted; they used to fail with "Unknown encryption type R = 6". PDFs that need a password to open are reported clearly
 - Text layers in PDFs (visible text or hidden OCR text) are ignored: only the page images are extracted, byte-for-byte as stored in the PDF
 - Merging sliced images: pages that weren't sliced are now kept exactly as extracted instead of being re-saved; slices are joined pixel-for-pixel regardless of their DPI setting; merged pages are saved as lossless `.png` (they used to be PNG data with a `.jpg` name)
 - Fixed: pressing Stop during CBR/CBZ → PDF left a half-written PDF behind

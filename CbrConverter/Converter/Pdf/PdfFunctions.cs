@@ -24,57 +24,120 @@ namespace CbrConverter
             DataAccess.Instance.g_curProgress = 0;
             evnt_UpdateCurBar();
 
-            var imagesList = new Dictionary<PageImageIndex, Image>();          
-
-            // Ask itextsharp to extract image
-            var pdfReader = new PdfReader(filename);
-            var pdfParser = new PdfReaderContentParser(pdfReader);
-            var pdfListener = new PDFImageListener(dirForExtractions);
-
-            double tem0 = divider;
-            double pgc = pdfReader.NumberOfPages;
-            double CurOneStep = (double)(tem0 / pgc);
-
-            details.Pages = (int)pgc;
-
-            for (int i = 1; i <= pgc; i++)
+            Dictionary<PageImageIndex, Image> extracted = null;
+            PdfReader pdfReader = null;
+            try
             {
-                pdfListener.PageIndex = i;
-                // itextsharp send response to listener
-                pdfParser.ProcessContent(i, pdfListener);
-
-                DataAccess.Instance.g_curProgress += CurOneStep;
-                evnt_UpdateCurBar();
+                pdfReader = new PdfReader(filename);
             }
-
-            imagesList = pdfListener.ImagesList; 
-            details.ImagesBeforeMerge = pdfListener.ImagesList.Count;
-            details.ImagesAfterMerge = details.ImagesBeforeMerge;
-
-            if (checkResult && pdfReader.NumberOfPages != details.ImagesBeforeMerge)
+            catch (Exception ex) when (!(ex is FileNotFoundException || ex is DirectoryNotFoundException || ex is UnauthorizedAccessException))
             {
-                if (joinImages)
-                {
-                    ImageJoiner cp = new ImageJoiner();
-                    imagesList = cp.Merge(pdfListener.ImagesList, dirForExtractions);
-                }
-
-                details.ImagesAfterMerge = imagesList.Count;
-
-                if(pdfReader.NumberOfPages != imagesList.Count)
-                {                    
-                    //Directory.Delete(dirForExtractions, true);
-                    //throw new Exception(string.Format("Error extracting {0} : {1} images for {2} pages", Path.GetFileName(filename), pdfListener.ImagesList.Count, pdfReader.NumberOfPages));
-                }
+                // iTextSharp can't open some PDFs, e.g. those using AES-256 revision 6 encryption (Acrobat X and later)
+                extracted = ExportWithPdfPig(filename, dirForExtractions, divider, details, ex);
             }
 
             if (pdfReader != null)
-                pdfReader.Close();
+            {
+                // Ask itextsharp to extract image
+                var pdfParser = new PdfReaderContentParser(pdfReader);
+                var pdfListener = new PDFImageListener(dirForExtractions);
 
-            // Write images to disk (because of memory problem write directly to file now)
-            //WriteImages(dirForExtractions, imagesList);
+                double pgc = pdfReader.NumberOfPages;
+                double CurOneStep = divider / pgc;
+                details.Pages = (int)pgc;
+
+                for (int i = 1; i <= pgc; i++)
+                {
+                    pdfListener.PageIndex = i;
+                    // itextsharp send response to listener
+                    pdfParser.ProcessContent(i, pdfListener);
+
+                    DataAccess.Instance.g_curProgress += CurOneStep;
+                    evnt_UpdateCurBar();
+                }
+                pdfReader.Close();
+                extracted = pdfListener.ImagesList;
+            }
+
+            details.ImagesBeforeMerge = extracted.Count;
+            details.ImagesAfterMerge = details.ImagesBeforeMerge;
+
+            if (checkResult && details.Pages != details.ImagesBeforeMerge && joinImages)
+            {
+                ImageJoiner cp = new ImageJoiner();
+                details.ImagesAfterMerge = cp.Merge(extracted, dirForExtractions).Count;
+            }
 
             return details;
+        }
+
+        /// <summary>
+        /// Extract the page images with PdfPig, which can read encryption iTextSharp can't. Files are named like
+        /// PDFImageListener names them, so merging works the same way.
+        /// </summary>
+        private static Dictionary<PageImageIndex, Image> ExportWithPdfPig(string filename, string dirForExtractions, int divider, PdfExtractionResult details, Exception iTextError)
+        {
+            UglyToad.PdfPig.PdfDocument doc;
+            try
+            {
+                doc = UglyToad.PdfPig.PdfDocument.Open(filename);
+            }
+            catch (UglyToad.PdfPig.Exceptions.PdfDocumentEncryptedException)
+            {
+                throw new Exception("this PDF is password-protected, so it can't be converted");
+            }
+            catch (Exception pigError)
+            {
+                // neither library can read it: report both reasons
+                throw new Exception(iTextError.Message + " (second PDF reader: " + pigError.Message + ")", iTextError);
+            }
+
+            var images = new Dictionary<PageImageIndex, Image>();
+            using (doc)
+            {
+                details.Pages = doc.NumberOfPages;
+                double step = (double)divider / doc.NumberOfPages;
+                Directory.CreateDirectory(dirForExtractions);
+
+                foreach (var page in doc.GetPages())
+                {
+                    foreach (var image in page.GetImages())
+                    {
+                        // keep JPEG and JPEG 2000 data exactly as stored; anything else is decoded to PNG
+                        byte[] bytes = image.RawMemory.ToArray();
+                        string ext;
+                        if (bytes.Length > 2 && bytes[0] == 0xFF && bytes[1] == 0xD8)
+                            ext = "jpg";
+                        else if (bytes.Length > 8 && bytes[4] == 0x6A && bytes[5] == 0x50 && bytes[6] == 0x20 && bytes[7] == 0x20)
+                            ext = "jp2";
+                        else if (bytes.Length > 2 && bytes[0] == 0xFF && bytes[1] == 0x4F)
+                            ext = "j2k";
+                        else if (image.TryGetPng(out var png))
+                        {
+                            bytes = png;
+                            ext = "png";
+                        }
+                        else
+                        {
+                            details.ImagesSkipped++;
+                            continue;
+                        }
+
+                        var index = new PageImageIndex
+                        {
+                            ImageName = string.Format("{0:0000}_{1:0000}.{2}", page.Number, images.Count, ext),
+                            ImageIndex = images.Count,
+                            PageIndex = page.Number
+                        };
+                        File.WriteAllBytes(System.IO.Path.Combine(dirForExtractions, index.ImageName), bytes);
+                        images.Add(index, null);
+                    }
+
+                    DataAccess.Instance.g_curProgress += step;
+                    evnt_UpdateCurBar();
+                }
+            }
+            return images;
         }
 
 //////////////////////////////////////////////// OLD METHOD (bug, sometime find same images for each pages)
