@@ -49,3 +49,5 @@ Now:
 - New program icon (CBRM&M)
 - Typo fixes ("process recursively", "ouput")
 - GitHub Actions builds a ready-to-run Windows .exe on every push
+- Version 2.0.0; MIT License (the original cbr-converter was MIT), with third-party library licenses listed in THIRD-PARTY-NOTICES.md
+- Pushing a version tag (e.g. v2.0.0) publishes a GitHub release with the .exe attached
