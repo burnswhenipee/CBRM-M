@@ -1,10 +1,10 @@
 name: Release
 
-# Push a tag like v2.0.0 to build the program and publish it as a GitHub release.
+# Publishing a release on GitHub (Releases > Draft a new release > Publish) builds the program
+# and attaches it to that release.
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -31,18 +31,17 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $name = "CBRMixMatch-${{ github.ref_name }}-win-x64"
+          $name = "CBRMixMatch-${{ github.event.release.tag_name }}-win-x64"
           New-Item -ItemType Directory -Path $name, "$name/LICENSES" | Out-Null
           Copy-Item publish/CbrConverter.exe, README.md, LICENSE, THIRD-PARTY-NOTICES.md -Destination $name
           Copy-Item LICENSES/AGPL-3.0.md -Destination "$name/LICENSES"
           Compress-Archive -Path $name -DestinationPath "$name.zip"
 
-      - name: Create release
+      - name: Attach to the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
-          gh release create ${{ github.ref_name }}
-          "CBRMixMatch-${{ github.ref_name }}-win-x64.zip"
+          gh release upload ${{ github.event.release.tag_name }}
+          "CBRMixMatch-${{ github.event.release.tag_name }}-win-x64.zip"
           publish/CbrConverter.exe
-          --title "CBRMix&Match ${{ github.ref_name }}"
-          --generate-notes
+          --clobber
