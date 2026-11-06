@@ -16,6 +16,7 @@ namespace CbrConverter
         public AboutorForm()
         {
             InitializeComponent();
+            this.Icon = Program.AppIcon;
 
             //Assembly assembly = Assembly.GetExecutingAssembly();
             //FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -24,7 +25,7 @@ namespace CbrConverter
 
         private void linkLabelInfo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(((LinkLabel)sender).Text);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(((LinkLabel)sender).Text) { UseShellExecute = true });
         }
     }
 }

@@ -1,0 +1,53 @@
+# Changelog
+
+Running notes for the README's "What's new" section, to be written up when the modernization is done.
+
+## Fixed: data-loss bug (important for anyone using the original)
+
+The original program could permanently delete a folder in your output location.
+
+When converting a file such as `Comic.cbz`, it unpacked the images into a working folder named `Comic` next to the output file. If a folder with that name already existed there, the program deleted it and everything in it without asking, then deleted its own working folder when done. Existing output files (`Comic.pdf` / `Comic.cbz`) were also overwritten silently.
+
+Now:
+- Images are unpacked into a private folder in the Windows temp directory, which is cleaned up afterward. Nothing in your folders is touched except the new output file.
+- If the output file already exists, the new one is saved as `Comic (1).pdf`, `Comic (2).pdf`, etc., and the log says so.
+
+## Other changes so far
+
+- Ported to .NET 8; updated SharpCompress (0.26 → 0.50.7) and iTextSharp (5.5.13.4); replaced the deprecated DotNetZip with built-in zip support; added PdfPig for PDFs iTextSharp can't open
+- Window is resizable and maximizable; the log is always visible and fills the remaining space
+- Removed the show/hide log arrow
+- Long log messages can be read by widening the window or scrolling sideways; hover a row for the full message; Ctrl+A / Ctrl+C copy messages
+- Source is chosen with a standard Windows folder dialog (Browse...) that reopens at the last location used; to convert a single file, drag it onto the window
+- "Merge images from same Pdf page" is now unchecked by default
+- The "N images for M pages!" warning now also appears when the images were merged back into pages (it says "Merged into N images"), so sliced-up PDFs are always flagged
+- Only `.cbr`, `.cbz` and `.pdf` files are picked up; other files (including `.rar` and `.zip`, which the original also converted) are ignored
+- New, cleaner layout: Source / Output / Convert / Progress sections, a proper Start button, and the window can be dragged to any size
+- Drag a file or folder onto the window (or onto the .exe) to select it
+- Output is now "Same folder as source" or "Other folder", with a Browse button
+- Conversion is now one choice: Convert [CBR / CBZ | PDF | Image folders] to [CBZ | PDF | Image folders] (any pair except same-to-same). This replaces the old checkboxes, including the confusing "P/Img"; "Merge sliced images back into whole pages" only appears when converting from PDF
+- New conversions: CBR/CBZ → image folders, PDF → image folders, image folders → CBZ and image folders → PDF
+- Removed "Compress images to reduce file size": images are always kept at their original resolution and quality
+- Folders are no longer processed recursively: only the files directly inside the selected folder are converted
+- "Image folders" means the subfolders of the selected folder: each is treated as one comic made of the images directly inside it, and named after the subfolder; subfolders without images are skipped with a warning
+- Fixed: pages in different subfolders of an archive (e.g. one folder per chapter) with the same file name overwrote each other, losing pages
+- Only images are taken from CBR/CBZ files; anything else inside (PDFs, text files, etc.) is ignored, with one warning per file
+- Folders inside CBR/CBZ files are kept: "Image folders" output recreates them, and PDF output takes the pages folder by folder in reading order (a single folder wrapping everything is dropped)
+- Archive entries that try to write outside the output folder (e.g. `..\..\file`) are blocked
+- JPEG 2000 (`.jp2`, `.j2k`) images can now be put in PDFs as they are, without conversion
+- Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out, with one message per file rather than one per image
+- PDFs using AES-256 revision 6 encryption (Acrobat X and later, e.g. "no copying" permission settings) can now be converted; they used to fail with "Unknown encryption type R = 6". PDFs that need a password to open are reported clearly
+- Slightly damaged PDFs that the original rejected (e.g. "Rebuild failed: - is not a valid number") are now read with a second, more forgiving PDF reader
+- Text layers in PDFs (visible text or hidden OCR text) are ignored: only the page images are extracted, byte-for-byte as stored in the PDF
+- Merging sliced images: pages that weren't sliced are now kept exactly as extracted instead of being re-saved; slices are joined pixel-for-pixel regardless of their DPI setting; merged pages are saved as lossless `.png` (they used to be PNG data with a `.jpg` name)
+- Fixed: pressing Stop during CBR/CBZ → PDF left a half-written PDF behind
+- Progress shows "File 3 of 12"; the "Overall" bar moves steadily and counts only the files that will actually be converted (it used to count only PDFs)
+- The log shows only warnings and errors, with the time and type; warnings and errors are colour-coded; a line under the column headings; a Clear button; click "Type" to group errors and warnings (click again, or click "Time", for time order)
+- Fixed: one unreadable CBR/CBZ stopped a whole folder conversion; now it's logged and the next file is converted
+- Fixed: clicking the link in the About window crashed; the link now points to this project
+- Settings are locked while a conversion runs, so they can't be changed halfway through
+- New program icon (CBRM&M) and window title (CBRMix&Match)
+- Typo fixes ("process recursively", "ouput")
+- GitHub Actions builds a ready-to-run Windows .exe on every push
+- Version 2.0.0; MIT License (the original cbr-converter was MIT), with third-party library licenses listed in THIRD-PARTY-NOTICES.md
+- Pushing a version tag (e.g. v2.0.0) publishes a GitHub release with the .exe attached

@@ -50,7 +50,7 @@
             this.linkLabelInfo.Size = new System.Drawing.Size(219, 13);
             this.linkLabelInfo.TabIndex = 0;
             this.linkLabelInfo.TabStop = true;
-            this.linkLabelInfo.Text = "https://github.com/dragouf/CbrPdfConverter";
+            this.linkLabelInfo.Text = "https://github.com/burnswhenipee/CBRM-M";
             this.linkLabelInfo.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelInfo_LinkClicked);
             // 
             // AboutorForm
