@@ -88,7 +88,7 @@ namespace CbrConverter
                 return;
             if (rb_CustomFolder.Checked && !Directory.Exists(_lastOutputPath))
             {
-                MessageBox.Show(this, "Choose an output folder first, or select \"Same folder as source\".", "CBR Converter", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "Choose an output folder first, or select \"Same folder as source\".", "CBRMix&Match", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 

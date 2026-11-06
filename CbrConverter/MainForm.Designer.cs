@@ -489,7 +489,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "CBR Converter";
+            this.Text = "CBRMix&Match";
             this.layoutRoot.ResumeLayout(false);
             this.layoutRoot.PerformLayout();
             this.layoutSource.ResumeLayout(false);

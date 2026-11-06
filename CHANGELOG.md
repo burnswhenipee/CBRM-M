@@ -46,7 +46,7 @@ Now:
 - Fixed: one unreadable CBR/CBZ stopped a whole folder conversion; now it's logged and the next file is converted
 - Fixed: clicking the link in the About window crashed; the link now points to this project
 - Settings are locked while a conversion runs, so they can't be changed halfway through
-- New program icon (CBRM&M)
+- New program icon (CBRM&M) and window title (CBRMix&Match)
 - Typo fixes ("process recursively", "ouput")
 - GitHub Actions builds a ready-to-run Windows .exe on every push
 - Version 2.0.0; MIT License (the original cbr-converter was MIT), with third-party library licenses listed in THIRD-PARTY-NOTICES.md
