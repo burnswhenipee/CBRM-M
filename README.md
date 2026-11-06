@@ -1,20 +1,12 @@
-CbrPdfConverter
+CBRM&M
 ===============
 
-A simple application to convert .cbr/.cbz to pdf and .pdf to .cbz.
+CBRMix&Match is a program to convert CBR/CBZ comic files to PDF, PDF to comic formats, or to export images from PDF and comic files for inspection or editing.
 
-This is a fork of https://code.google.com/p/cbr-converter/
+It's based on https://code.google.com/p/cbr-converter/
 
 What's new in this fork :
 
-  - Finding images in pdf is more efficient
-  - Can merge images of a page 
-  - Process folder recursively
-  - You can choose output folder
-  - Error won't pause processing 
-
-__Note :__ If you don't have visual studio you can download the executable file here: https://github.com/rfog/CbrPdfConverter/blob/master/Compiled/v1.2/CbrConverter1.2.zip
-
-<p align="center">
-<img src="http://i.imgur.com/m34YK9n.png" alt="CbrConverter screenshot" />
-</p>
+  - Window is now resizable so you can read the damn log. This is the main reason I undertook this project.
+  - Fixed innumerable PDF issues.
+  - Can now directly convert between CBR/Z - PDF - and image folders
