@@ -44,7 +44,7 @@ Now:
 - Progress shows "File 3 of 12"; the "Overall" bar moves steadily and counts only the files that will actually be converted (it used to count only PDFs)
 - The log shows only warnings and errors, with the time and type; warnings and errors are colour-coded; a line under the column headings; a Clear button; click "Type" to group errors and warnings (click again, or click "Time", for time order)
 - Fixed: one unreadable CBR/CBZ stopped a whole folder conversion; now it's logged and the next file is converted
-- Fixed: clicking the link in the About window crashed
+- Fixed: clicking the link in the About window crashed; the link now points to this project
 - Settings are locked while a conversion runs, so they can't be changed halfway through
 - New program icon (CBRM&M)
 - Typo fixes ("process recursively", "ouput")
