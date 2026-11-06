@@ -46,5 +46,6 @@ Now:
 - Fixed: one unreadable CBR/CBZ stopped a whole folder conversion; now it's logged and the next file is converted
 - Fixed: clicking the link in the About window crashed
 - Settings are locked while a conversion runs, so they can't be changed halfway through
+- New program icon (CBRM&M)
 - Typo fixes ("process recursively", "ouput")
 - GitHub Actions builds a ready-to-run Windows .exe on every push

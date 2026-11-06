@@ -16,6 +16,7 @@ namespace CbrConverter
         public AboutorForm()
         {
             InitializeComponent();
+            this.Icon = Program.AppIcon;
 
             //Assembly assembly = Assembly.GetExecutingAssembly();
             //FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);

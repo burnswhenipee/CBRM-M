@@ -7,7 +7,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>CbrConverter</RootNamespace>
     <AssemblyName>CbrConverter</AssemblyName>
-    <ApplicationIcon>1335329130_comic-book.ico</ApplicationIcon>
+    <ApplicationIcon>cbrmm.ico</ApplicationIcon>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -17,6 +17,10 @@
     <PackageReference Include="iTextSharp" Version="5.5.13.4" />
     <PackageReference Include="PdfPig" Version="0.1.16" />
     <PackageReference Include="SharpCompress" Version="0.50.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="cbrmm.ico" LogicalName="CbrConverter.cbrmm.ico" />
   </ItemGroup>
 
   <ItemGroup>

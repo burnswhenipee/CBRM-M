@@ -8,6 +8,18 @@ namespace CbrConverter
     static class Program
     {
         /// <summary>
+        /// The program icon, used by every window
+        /// </summary>
+        public static System.Drawing.Icon AppIcon
+        {
+            get
+            {
+                using (var stream = typeof(Program).Assembly.GetManifestResourceStream("CbrConverter.cbrmm.ico"))
+                    return new System.Drawing.Icon(stream);
+            }
+        }
+
+        /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]

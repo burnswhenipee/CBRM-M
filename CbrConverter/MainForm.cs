@@ -52,6 +52,7 @@ namespace CbrConverter
         public MainForm(string startPath = null)
         {
             InitializeComponent();
+            this.Icon = Program.AppIcon;
             PdfFunctions.evnt_UpdateCurBar += new PdfFunctions.UpdateCurrentBar(UpdateCurrBar);
             EnableDragDrop(this);
 
