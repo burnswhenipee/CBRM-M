@@ -197,8 +197,23 @@ namespace CbrConverter
         /// </summary>
         private void ExtractArchive(string file, double progressShare)
         {
-            using var archive = ArchiveFactory.OpenArchive(file, new ReaderOptions());
-            var entries = archive.Entries.Where(entry => !entry.IsDirectory).ToList();
+            IArchive opened = null;
+            List<IArchiveEntry> entries;
+            try
+            {
+                // the archive is read lazily, so a broken file can also fail while listing its contents
+                opened = ArchiveFactory.OpenArchive(file, new ReaderOptions());
+                entries = opened.Entries.Where(entry => !entry.IsDirectory).ToList();
+            }
+            catch (Exception ex)
+            {
+                opened?.Dispose();
+                // explain what the file really is instead of the archive library's message
+                if (FileSniffer.LooksLikeArchive(file))
+                    throw new Exception("the archive seems to be damaged or incomplete (" + ex.Message + ")", ex);
+                throw new Exception("not a real CBR/CBZ: " + FileSniffer.Describe(file), ex);
+            }
+            using var archive = opened;
 
             // only images are taken; anything else in the archive (PDFs, text, ...) is left out
             var images = entries.Where(entry => IsImage(entry.Key)).ToList();
@@ -293,7 +308,16 @@ namespace CbrConverter
         /// </summary>
         private void ExtractPdf(string file, int progressShare)
         {
-            var result = PdfFunctions.PDF_ExportImage(file, temporaryDir, progressShare, true, _JoinImages);
+            PdfExtractionResult result;
+            try
+            {
+                result = PdfFunctions.PDF_ExportImage(file, temporaryDir, progressShare, true, _JoinImages);
+            }
+            catch (Exception ex) when (!FileSniffer.LooksLikePdf(file))
+            {
+                // explain what the file really is instead of the PDF readers' messages
+                throw new Exception("not a real PDF: " + FileSniffer.Describe(file), ex);
+            }
 
             if (result.ImagesSkipped > 0)
                 evnt_WarningNotify(this, string.Format("{0} : {1} images couldn't be read and were left out", file, result.ImagesSkipped));

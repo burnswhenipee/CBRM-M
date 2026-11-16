@@ -33,6 +33,7 @@ Now:
 - Fixed: pages in different subfolders of an archive (e.g. one folder per chapter) with the same file name overwrote each other, losing pages
 - Only images are taken from CBR/CBZ files; anything else inside (PDFs, text files, etc.) is ignored, with one warning per file
 - Folders inside CBR/CBZ files are kept: "Image folders" output recreates them, and PDF output takes the pages folder by folder in reading order (a single folder wrapping everything is dropped)
+- Files that aren't what their extension says get a clear explanation instead of a library error, e.g. "not a real PDF: it's actually a web page (the download probably failed)", "it's an empty file", "it's actually a ZIP archive (rename it to .cbz…)", or "the archive seems to be damaged or incomplete"
 - Archive entries that try to write outside the output folder (e.g. `..\..\file`) are blocked
 - JPEG 2000 (`.jp2`, `.j2k`) images can now be put in PDFs as they are, without conversion
 - Images that can't go in a PDF (e.g. .webp) are reported in the log instead of silently left out, with one message per file rather than one per image
