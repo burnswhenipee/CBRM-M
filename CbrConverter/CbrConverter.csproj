@@ -6,9 +6,16 @@
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>CbrConverter</RootNamespace>
-    <AssemblyName>CbrConverter</AssemblyName>
+    <AssemblyName>CBRM-M</AssemblyName>
     <ApplicationIcon>cbrmm.ico</ApplicationIcon>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <!-- shown in the exe's Properties > Details; the release workflow sets Version from the release tag -->
+    <Version>2.1.0</Version>
+    <AssemblyTitle>CBRMix&amp;Match</AssemblyTitle>
+    <Product>CBRMix&amp;Match</Product>
+    <Company />
+    <Copyright>Copyright © 2012-2026 the cbr-converter, CbrPdfConverter and CBRMix&amp;Match contributors</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>

@@ -2,7 +2,7 @@
 
 The source code in this repository is under the MIT License (see `LICENSE`).
 
-The ready-to-run `CbrConverter.exe` also contains the libraries below. Most are under permissive licenses, but **iTextSharp is under the GNU Affero General Public License v3 (AGPL-3.0)**, so the `.exe` as a whole is distributed under the terms of the AGPL-3.0. The complete source code for it is this repository. If you build the program yourself without iTextSharp, only the permissive licenses apply.
+The ready-to-run `CBRM-M.exe` also contains the libraries below. Most are under permissive licenses, but **iTextSharp is under the GNU Affero General Public License v3 (AGPL-3.0)**, so the `.exe` as a whole is distributed under the terms of the AGPL-3.0. The complete source code for it is this repository. If you build the program yourself without iTextSharp, only the permissive licenses apply.
 
 | Library | Version | License | Used for |
 |---|---|---|---|

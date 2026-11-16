@@ -28,5 +28,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CbrConverter-win-x64
-          path: publish/CbrConverter.exe
+          name: CBRM-M-win-x64
+          path: publish/CBRM-M.exe
