@@ -17,6 +17,18 @@ namespace CbrConverter
         public delegate void UpdateCurrentBar();
 
 
+        /// <summary>
+        /// Operators that set fonts and draw text, replaced by ones that do nothing: only the images are
+        /// wanted, and loading fonts can fail (e.g. fonts with Mac Roman names need a legacy encoding)
+        /// </summary>
+        static readonly Dictionary<string, IContentOperator> SkipText = new[] { "Tf", "Tj", "TJ", "'", "\"" }
+            .ToDictionary(name => name, name => (IContentOperator)new IgnoreOperator());
+
+        class IgnoreOperator : IContentOperator
+        {
+            public void Invoke(PdfContentStreamProcessor processor, PdfLiteral oper, List<PdfObject> operands) { }
+        }
+
         public static PdfExtractionResult PDF_ExportImage(string filename, string dirForExtractions, int divider, bool checkResult, bool joinImages)
         {
             var details = new PdfExtractionResult();
@@ -38,25 +50,40 @@ namespace CbrConverter
 
             if (pdfReader != null)
             {
-                // Ask itextsharp to extract image
-                var pdfParser = new PdfReaderContentParser(pdfReader);
-                var pdfListener = new PDFImageListener(dirForExtractions);
-
-                double pgc = pdfReader.NumberOfPages;
-                double CurOneStep = divider / pgc;
-                details.Pages = (int)pgc;
-
-                for (int i = 1; i <= pgc; i++)
+                try
                 {
-                    pdfListener.PageIndex = i;
-                    // itextsharp send response to listener
-                    pdfParser.ProcessContent(i, pdfListener);
+                    // Ask itextsharp to extract image
+                    var pdfParser = new PdfReaderContentParser(pdfReader);
+                    var pdfListener = new PDFImageListener(dirForExtractions);
 
-                    DataAccess.Instance.g_curProgress += CurOneStep;
-                    evnt_UpdateCurBar();
+                    double pgc = pdfReader.NumberOfPages;
+                    double CurOneStep = divider / pgc;
+                    details.Pages = (int)pgc;
+
+                    for (int i = 1; i <= pgc; i++)
+                    {
+                        pdfListener.PageIndex = i;
+                        // itextsharp send response to listener, skipping text so fonts are never loaded
+                        pdfParser.ProcessContent(i, pdfListener, SkipText);
+
+                        DataAccess.Instance.g_curProgress += CurOneStep;
+                        evnt_UpdateCurBar();
+                    }
+                    extracted = pdfListener.ImagesList;
                 }
-                pdfReader.Close();
-                extracted = pdfListener.ImagesList;
+                catch (Exception ex)
+                {
+                    // iTextSharp failed partway through: start this PDF again with PdfPig
+                    foreach (string partial in Directory.GetFiles(dirForExtractions))
+                        File.Delete(partial);
+                    DataAccess.Instance.g_curProgress = 0;
+                    evnt_UpdateCurBar();
+                    extracted = ExportWithPdfPig(filename, dirForExtractions, divider, details, ex);
+                }
+                finally
+                {
+                    pdfReader.Close();
+                }
             }
 
             details.ImagesBeforeMerge = extracted.Count;
