@@ -13,27 +13,32 @@ jobs:
   release:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
       - name: Publish
-        run: >
-          dotnet publish CbrConverter/CbrConverter.csproj
-          -c Release -r win-x64 --self-contained true
-          -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:EnableCompressionInSingleFile=true
-          -o publish
+        shell: pwsh
+        run: |
+          # the release tag (e.g. v2.1.0) becomes the version shown in the exe's Properties > Details
+          $version = "${{ github.event.release.tag_name }}".TrimStart('v', 'V')
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Release tag must look like v2.1.0, not '${{ github.event.release.tag_name }}'" }
+          dotnet publish CbrConverter/CbrConverter.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:Version=$version `
+            -o publish
 
       - name: Package
         shell: pwsh
         run: |
           $name = "CBRMixMatch-${{ github.event.release.tag_name }}-win-x64"
           New-Item -ItemType Directory -Path $name, "$name/LICENSES" | Out-Null
-          Copy-Item publish/CbrConverter.exe, README.md, LICENSE, THIRD-PARTY-NOTICES.md -Destination $name
+          Copy-Item publish/CBRM-M.exe, README.md, LICENSE, THIRD-PARTY-NOTICES.md -Destination $name
           Copy-Item LICENSES/AGPL-3.0.md -Destination "$name/LICENSES"
           Compress-Archive -Path $name -DestinationPath "$name.zip"
 
@@ -43,5 +48,5 @@ jobs:
         run: >
           gh release upload ${{ github.event.release.tag_name }}
           "CBRMixMatch-${{ github.event.release.tag_name }}-win-x64.zip"
-          publish/CbrConverter.exe
+          publish/CBRM-M.exe
           --clobber

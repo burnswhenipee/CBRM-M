@@ -52,3 +52,6 @@ Now:
 - GitHub Actions builds a ready-to-run Windows .exe on every push
 - Version 2.0.0; MIT License (the original cbr-converter was MIT), with third-party library licenses listed in THIRD-PARTY-NOTICES.md
 - Publishing a release on GitHub builds the program and attaches the .exe (and a zip with the license files) to it
+- The program file is now `CBRM-M.exe`, matching the repository name
+- The version in the exe's Properties > Details is taken from the release tag (e.g. v2.1.0 → 2.1.0)
+- Removed the old `Compiled` folder (the original program's v1.2 build) from the repository
