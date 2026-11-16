@@ -1,4 +1,4 @@
-CBRM&M
+CBRMix&Match
 ===============
 
 CBRMix&Match is a program to convert CBR/CBZ comic files to PDF, PDF to comic formats, or to export images from PDF and comic files for inspection or editing.
