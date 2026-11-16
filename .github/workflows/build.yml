@@ -1,7 +1,9 @@
 name: Build
 
+# Build for pull requests and for master; any other branch can be built by hand from the Actions tab.
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_dispatch:
 
